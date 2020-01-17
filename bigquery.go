@@ -10,7 +10,7 @@ import (
 
 // BigQueryGetRefreshToken get refreshtoken from BigQuery
 //
-func (eo *ExactOnline) GetTokenFromBigQuery2() error {
+func (eo *ExactOnline) GetTokenFromBigQuery() error {
 	// create client
 	bqClient, err := eo.BigQuery.CreateClient()
 	if err != nil {
@@ -57,14 +57,14 @@ func (eo *ExactOnline) GetTokenFromBigQuery2() error {
 	//token.RefreshToken = refreshToken
 	token.AccessToken = ""
 
-	eo.Token2 = token
+	eo.Token = token
 
 	return nil
 }
 
 // BigQuerySaveToken saves refreshtoken to BigQuery
 //
-func (eo *ExactOnline) SaveTokenToBigQuery2() error {
+func (eo *ExactOnline) SaveTokenToBigQuery() error {
 	// create client
 	bqClient, err := eo.BigQuery.CreateClient()
 	if err != nil {
@@ -72,12 +72,12 @@ func (eo *ExactOnline) SaveTokenToBigQuery2() error {
 		return err
 	}
 
-	//fmt.Println("[save]", eo.Token2.RefreshToken[0:20])
+	//fmt.Println("[save]", eo.Token.RefreshToken[0:20])
 
 	ctx := context.Background()
 
 	sql := "MERGE `" + eo.BigQueryDataset + "." + eo.BigQueryTablename + "` AS TARGET " +
-		"USING  (select '" + eo.RefreshTokenKey + "' AS key,'" + eo.Token2.RefreshToken + "' AS value) AS SOURCE " +
+		"USING  (select '" + eo.RefreshTokenKey + "' AS key,'" + eo.Token.RefreshToken + "' AS value) AS SOURCE " +
 		" ON TARGET.key = SOURCE.key " +
 		"WHEN MATCHED THEN " +
 		"	UPDATE " +

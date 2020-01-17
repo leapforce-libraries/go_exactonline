@@ -51,7 +51,7 @@ func (t *Token) IsExpired() (bool, error) {
 	return false, nil
 }
 
-func (eo *ExactOnline) GetToken2(data url.Values) error {
+func (eo *ExactOnline) GetToken(data url.Values) error {
 	httpClient := http.Client{}
 	req, err := http.NewRequest(http.MethodPost, eo.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -90,12 +90,15 @@ func (eo *ExactOnline) GetToken2(data url.Values) error {
 		return err
 	}
 	token.Expiry = time.Now().Add(time.Duration(expiresIn) * time.Second)
-	eo.Token2 = &token
+	eo.Token = &token
 
-	err = eo.SaveTokenToBigQuery2()
+	err = eo.SaveTokenToBigQuery()
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("new token:")
+	fmt.Println(eo.Token.AccessToken)
 
 	return nil
 }
@@ -109,44 +112,42 @@ func (eo *ExactOnline) GetTokenFromCode(code string) error {
 	data.Set("grant_type", "authorization_code")
 	data.Set("redirect_uri", eo.RedirectURL)
 
-	return eo.GetToken2(data)
+	return eo.GetToken(data)
 }
 
 func (eo *ExactOnline) GetTokenFromRefreshToken() error {
 	//fmt.Println("GetTokenFromRefreshToken")
-	//fmt.Println(eo.Token2.RefreshToken[0:20])
-	if !eo.Token2.Refreshable() {
+	//fmt.Println(eo.Token.RefreshToken[0:20])
+	if !eo.Token.Refreshable() {
 		return &types.ErrorString{"Token is not valid."}
 	}
 	data := url.Values{}
 	data.Set("client_id", eo.ClientID)
 	data.Set("client_secret", eo.ClientSecret)
-	data.Set("refresh_token", eo.Token2.RefreshToken)
+	data.Set("refresh_token", eo.Token.RefreshToken)
 	data.Set("grant_type", "refresh_token")
 
-	return eo.GetToken2(data)
+	return eo.GetToken(data)
 }
 
 func (eo *ExactOnline) ValidateToken() error {
-	if !eo.Token2.Useable() {
-		if !eo.Token2.Refreshable() {
-			err := eo.GetTokenFromBigQuery2()
+	if !eo.Token.Useable() {
+		if !eo.Token.Refreshable() {
+			err := eo.GetTokenFromBigQuery()
 			if err != nil {
 				return err
 			}
-			//fmt.Println(time.Now(), eo.Token2.Expiry, "[from bq]", eo.Token2.AccessToken, eo.Token2.RefreshToken)
+			//fmt.Println(time.Now(), eo.Token.Expiry, "[from bq]", eo.Token.AccessToken, eo.Token.RefreshToken)
 		}
 
-		if eo.Token2.Refreshable() {
+		if eo.Token.Refreshable() {
 			err := eo.GetTokenFromRefreshToken()
 			if err != nil {
 				return err
 			}
-			fmt.Println("new token:")
-			fmt.Println(eo.Token2.AccessToken)
 		}
 
-		if !eo.Token2.Useable() {
+		if !eo.Token.Useable() {
 			err := eo.InitToken()
 			if err != nil {
 				return err
@@ -155,21 +156,21 @@ func (eo *ExactOnline) ValidateToken() error {
 		}
 	}
 
-	//fmt.Println("[try]", time.Now(), eo.Token2.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token2.AccessToken[0:20], "[rt]", eo.Token2.RefreshToken[0:20])
+	//fmt.Println("[try]", time.Now(), eo.Token.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token.AccessToken[0:20], "[rt]", eo.Token.RefreshToken[0:20])
 
-	isExpired, err := eo.Token2.IsExpired()
+	isExpired, err := eo.Token.IsExpired()
 	if err != nil {
 		return err
 	}
 	if isExpired {
-		fmt.Println(time.Now(), "[token expired]")
+		//fmt.Println(time.Now(), "[token expired]")
 		err = eo.GetTokenFromRefreshToken()
 		if err != nil {
 			return err
 		}
 	}
 
-	//fmt.Println("[done]", time.Now(), eo.Token2.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token2.AccessToken[0:20], "[rt]", eo.Token2.RefreshToken[0:20])
+	//fmt.Println("[done]", time.Now(), eo.Token.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token.AccessToken[0:20], "[rt]", eo.Token.RefreshToken[0:20])
 
 	return nil
 }

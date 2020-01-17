@@ -36,7 +36,7 @@ type ExactOnline struct {
 	Subscriptions     []Subscription
 	SubscriptionLines []SubscriptionLine
 	Divisions         []Division
-	Token2            *Token
+	Token             *Token
 }
 
 type callbackFunction func()
@@ -163,8 +163,6 @@ func (eo *ExactOnline) GetAll() error {
 		bq := new(bigquery.BigQuery)
 		SliceToBigQuery(b, eSubscription{})*/
 
-	log.Fatal("ready")
-
 	// print
 	//jsonString, _ = json.Marshal(eo.Subscriptions)
 	//fmt.Println(string(jsonString))
@@ -247,7 +245,7 @@ func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 		return "", err
 	}
 	// Add authorization token to header
-	var bearer = "Bearer " + eo.Token2.AccessToken
+	var bearer = "Bearer " + eo.Token.AccessToken
 	req.Header.Add("authorization", bearer)
 	req.Header.Set("Accept", "application/json")
 
