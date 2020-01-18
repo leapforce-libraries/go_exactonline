@@ -9,17 +9,17 @@ import (
 // Account stores account from exactonline
 //
 type Account struct {
-	ID                     types.GUID `json:"ID"`
-	Name                   string     `json:"Name"`
-	ChamberOfCommerce      string     `json:"ChamberOfCommerce"`
-	AddressLine1           string     `json:"AddressLine1"`
-	Postcode               string     `json:"Postcode"`
-	City                   string     `json:"City"`
-	State                  string     `json:"State"`
-	StateName              string     `json:"StateName"`
-	Country                string     `json:"Country"`
-	CountryName            string     `json:"CountryName"`
-	AccountManager         types.GUID `json:"AccountManager,omitempty"`
+	ID                types.GUID `json:"ID"`
+	Name              string     `json:"Name"`
+	ChamberOfCommerce string     `json:"ChamberOfCommerce"`
+	AddressLine1      string     `json:"AddressLine1"`
+	Postcode          string     `json:"Postcode"`
+	City              string     `json:"City"`
+	State             string     `json:"State"`
+	//StateName              string     `json:"StateName"`
+	Country string `json:"Country"`
+	//CountryName            string     `json:"CountryName"`
+	AccountManager         types.GUID `json:"AccountManager"`
 	AccountManagerFullName string     `json:"AccountManagerFullName"`
 	MainContact            types.GUID `json:"MainContact"`
 }
@@ -38,7 +38,9 @@ func (a *Account) Values() string {
 }
 
 func (eo *ExactOnline) getAccounts() error {
-	urlStr := fmt.Sprintf("%s%s/crm/Accounts", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	selectFields := GetJsonTaggedFieldNames(Account{})
+	urlStr := fmt.Sprintf("%s%s/crm/Accounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	//fmt.Println(urlStr)
 
 	eo.Accounts = []Account{}
 
@@ -68,6 +70,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	data["AddressLine1"] = a.AddressLine1
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
+	data["Country"] = a.Country
 	//data["State"] = "ZH"   //a.StateName + "_updated3"
 	//data["Country"] = "NL" //a.CountryName + "_updated3"
 	//data["AccountManagerFullName"] = a.AccountManagerFullName + "_updated3"
@@ -75,7 +78,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	fmt.Println("update", urlStr, a.Name)
+	fmt.Println("update", urlStr, a.Country, a.Name)
 
 	err := eo.put(urlStr, data)
 	if err != nil {
@@ -109,6 +112,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	data["AddressLine1"] = a.AddressLine1
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
+	data["Country"] = a.Country
 	//data["State"] = a.StateName
 	//data["Country"] = a.CountryName
 	//data["AccountManagerFullName"] = a.AccountManagerFullName
@@ -117,7 +121,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	//fmt.Println(urlStr)
 	ac := Account{}
 
-	fmt.Println("insert", urlStr, a.Name)
+	fmt.Println("insert", urlStr, a.Country, a.Name)
 
 	err := eo.post(urlStr, data, &ac)
 	if err != nil {

@@ -33,7 +33,9 @@ func (c *Contact) Values() string {
 }
 
 func (eo *ExactOnline) getContacts() error {
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	selectFields := GetJsonTaggedFieldNames(Contact{})
+	urlStr := fmt.Sprintf("%s%s/crm/Contacts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	//fmt.Println(urlStr)
 
 	eo.Contacts = []Contact{}
 
@@ -65,7 +67,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	data["Title"] = c.Title
 	data["Email"] = c.Email
 
-	fmt.Println("update", urlStr, c.LastName)
+	fmt.Println("update", urlStr, c.Email)
 
 	err := eo.put(urlStr, data)
 	if err != nil {
@@ -91,7 +93,7 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 
 	co := Contact{}
 
-	fmt.Println("insert", urlStr, "acc:"+c.Account.String())
+	fmt.Println("insert", urlStr, c.Account.String(), c.Email)
 
 	err := eo.post(urlStr, data, &co)
 	if err != nil {

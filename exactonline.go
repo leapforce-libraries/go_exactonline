@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -63,6 +64,25 @@ func (eo *ExactOnline) Init() error {
 	}
 
 	return nil
+}
+
+// GetJsonTaggedFieldNames returns comma separated string of
+// fieldnames of struct having a json tag
+//
+func GetJsonTaggedFieldNames(model interface{}) string {
+	val := reflect.ValueOf(model)
+	list := ""
+	for i := 0; i < val.Type().NumField(); i++ {
+		field := val.Type().Field(i)
+		tag := field.Tag.Get("json")
+		if tag != "" {
+			list += "," + field.Name
+		}
+	}
+
+	list = strings.Trim(list, ",")
+
+	return list
 }
 
 // Response represents highest level of exactonline api response
