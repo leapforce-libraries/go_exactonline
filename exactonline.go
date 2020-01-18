@@ -41,6 +41,9 @@ type ExactOnline struct {
 	// timer
 	//LastApiCall time.Time
 	Timestamps []time.Time
+	// rate limit
+	XRateLimitMinutelyRemaining int
+	XRateLimitMinutelyReset     int64
 }
 
 type callbackFunction func()
@@ -187,30 +190,42 @@ func (eo *ExactOnline) GetAll() error {
 	return nil
 }
 
-// wait assures the maximum of 60 api calls per minute dictated by exactonline's rate-limit
+// wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
 func (eo *ExactOnline) wait() error {
-	return nil
+	if eo.XRateLimitMinutelyRemaining < 1 {
+		reset := time.Unix(eo.XRateLimitMinutelyReset, 0)
+		ms := reset.Sub(time.Now()).Milliseconds()
 
-	maxCallsPerMinute := 60
-	msPerMinute := int64(60500) // 60000 ms go in a minute, plus a small margin...
-	len := len(eo.Timestamps)
-
-	if len >= maxCallsPerMinute {
-		ts := eo.Timestamps[len-maxCallsPerMinute]
-		ms := time.Now().Sub(ts).Milliseconds()
-
-		//fmt.Println(len, ms)
-
-		if ms < msPerMinute {
-			fmt.Println("waiting: ", (msPerMinute - ms), "ms")
-			time.Sleep(time.Duration(msPerMinute-ms) * time.Millisecond)
+		if ms > 0 {
+			fmt.Println("waiting ms:", ms)
+			time.Sleep(time.Duration(ms+1000) * time.Millisecond)
 		}
 	}
 
-	// add new timestamp
-	eo.Timestamps = append(eo.Timestamps, time.Now())
-
 	return nil
+
+	/*
+
+		maxCallsPerMinute := 60
+		msPerMinute := int64(60500) // 60000 ms go in a minute, plus a small margin...
+		len := len(eo.Timestamps)
+
+		if len >= maxCallsPerMinute {
+			ts := eo.Timestamps[len-maxCallsPerMinute]
+			ms := time.Now().Sub(ts).Milliseconds()
+
+			//fmt.Println(len, ms)
+
+			if ms < msPerMinute {
+				fmt.Println("waiting: ", (msPerMinute - ms), "ms")
+				time.Sleep(time.Duration(msPerMinute-ms) * time.Millisecond)
+			}
+		}
+
+		// add new timestamp
+		eo.Timestamps = append(eo.Timestamps, time.Now())
+
+		return nil*/
 }
 
 func (eo *ExactOnline) getHttpClient() (*http.Client, error) {
@@ -267,9 +282,15 @@ func (eo *ExactOnline) getSubscriptionLines() error {
 //
 // generic methods
 //
-func (eo *ExactOnline) readHeaders(res *http.Response) {
-	fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
-	fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))
+func (eo *ExactOnline) readRateLimitHeaders(res *http.Response) {
+	//fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
+	//fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))
+	remaining, errRem := strconv.Atoi(res.Header.Get("X-RateLimit-Minutely-Remaining"))
+	reset, errRes := strconv.ParseInt(res.Header.Get("X-RateLimit-Minutely-Reset"), 10, 64)
+	if errRem == nil && errRes == nil {
+		eo.XRateLimitMinutelyRemaining = remaining
+		eo.XRateLimitMinutelyReset = reset
+	}
 }
 
 func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
@@ -293,10 +314,13 @@ func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 		return "", err
 	}
 
-	eo.readHeaders(res)
+	eo.readRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("Status", res.Status)
+		fmt.Println(url)
+		fmt.Println(eo.Token.AccessToken)
 		return "", &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
 	}
 
@@ -345,10 +369,13 @@ func (eo *ExactOnline) put(url string, values map[string]string) error {
 		return err
 	}
 
-	eo.readHeaders(res)
+	eo.readRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("Status", res.Status)
+		fmt.Println(url, values)
+		fmt.Println(eo.Token.AccessToken)
 		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
 	}
 
@@ -384,16 +411,15 @@ func (eo *ExactOnline) post(url string, values map[string]string, model interfac
 		return err
 	}
 
-	eo.readHeaders(res)
-
-	fmt.Println("Status", res.Status)
+	eo.readRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("Status", res.Status)
+		fmt.Println(url, values)
+		fmt.Println(eo.Token.AccessToken)
 		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
 	}
-
-	fmt.Println(res)
 
 	defer res.Body.Close()
 
