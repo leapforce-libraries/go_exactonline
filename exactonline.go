@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"types"
 )
 
@@ -37,6 +38,9 @@ type ExactOnline struct {
 	SubscriptionLines []SubscriptionLine
 	Divisions         []Division
 	Token             *Token
+	// timer
+	//LastApiCall time.Time
+	Timestamps []time.Time
 }
 
 type callbackFunction func()
@@ -183,10 +187,39 @@ func (eo *ExactOnline) GetAll() error {
 	return nil
 }
 
-func (eo *ExactOnline) getHttpClient() (*http.Client, error) {
-	//ctx := context.Background()
+// wait assures the maximum of 60 api calls per minute dictated by exactonline's rate-limit
+func (eo *ExactOnline) wait() error {
+	return nil
 
-	err := eo.ValidateToken()
+	maxCallsPerMinute := 60
+	msPerMinute := int64(60500) // 60000 ms go in a minute, plus a small margin...
+	len := len(eo.Timestamps)
+
+	if len >= maxCallsPerMinute {
+		ts := eo.Timestamps[len-maxCallsPerMinute]
+		ms := time.Now().Sub(ts).Milliseconds()
+
+		//fmt.Println(len, ms)
+
+		if ms < msPerMinute {
+			fmt.Println("waiting: ", (msPerMinute - ms), "ms")
+			time.Sleep(time.Duration(msPerMinute-ms) * time.Millisecond)
+		}
+	}
+
+	// add new timestamp
+	eo.Timestamps = append(eo.Timestamps, time.Now())
+
+	return nil
+}
+
+func (eo *ExactOnline) getHttpClient() (*http.Client, error) {
+	err := eo.wait()
+	if err != nil {
+		return nil, err
+	}
+
+	err = eo.ValidateToken()
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +267,11 @@ func (eo *ExactOnline) getSubscriptionLines() error {
 //
 // generic methods
 //
+func (eo *ExactOnline) readHeaders(res *http.Response) {
+	fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
+	fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))
+}
+
 func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 	client, errClient := eo.getHttpClient()
 	if errClient != nil {
@@ -255,9 +293,11 @@ func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 		return "", err
 	}
 
+	eo.readHeaders(res)
+
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return "", &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
+		return "", &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
 	}
 
 	defer res.Body.Close()
@@ -293,13 +333,23 @@ func (eo *ExactOnline) put(url string, values map[string]string) error {
 	if err != nil {
 		return err
 	}
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send out the HTTP request
-	_, err = client.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
 		return err
+	}
+
+	eo.readHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
 	}
 
 	//fmt.Println(res)
@@ -313,7 +363,6 @@ func (eo *ExactOnline) post(url string, values map[string]string, model interfac
 		return errClient
 	}
 
-	//jsonValue, _ := json.Marshal(values)
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(values)
 
@@ -322,6 +371,9 @@ func (eo *ExactOnline) post(url string, values map[string]string, model interfac
 		fmt.Println("errNewRequest")
 		return err
 	}
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -332,10 +384,23 @@ func (eo *ExactOnline) post(url string, values map[string]string, model interfac
 		return err
 	}
 
+	eo.readHeaders(res)
+
+	fmt.Println("Status", res.Status)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
+	}
+
+	fmt.Println(res)
+
 	defer res.Body.Close()
 
 	b, err := ioutil.ReadAll(res.Body)
-	fmt.Println(string(b))
+	if err != nil {
+		return err
+	}
 
 	response := ResponseSingle{}
 

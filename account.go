@@ -75,7 +75,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	//fmt.Println(urlStr)
+	fmt.Println("update", urlStr, a.Name)
 
 	err := eo.put(urlStr, data)
 	if err != nil {
@@ -116,6 +116,8 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 
 	//fmt.Println(urlStr)
 	ac := Account{}
+
+	fmt.Println("insert", urlStr, a.Name)
 
 	err := eo.post(urlStr, data, &ac)
 	if err != nil {
