@@ -41,7 +41,7 @@ type ExactOnline struct {
 	Token             *Token
 	// timer
 	//LastApiCall time.Time
-	Timestamps []time.Time
+	//TimestampsTimestamps []time.Time
 	// rate limit
 	XRateLimitMinutelyRemaining int
 	XRateLimitMinutelyReset     int64
@@ -108,7 +108,6 @@ type Results struct {
 // getAll retrieves all tables
 //
 func (eo *ExactOnline) GetAll() error {
-
 	//
 	// get eMe
 	//
@@ -122,8 +121,37 @@ func (eo *ExactOnline) GetAll() error {
 	fmt.Println(eo.Me.CurrentDivision)
 
 	//
-	// get eContacts
+	// get SubscriptionLines
 	//
+	errSL := eo.getSubscriptionLines()
+	if errSL != nil {
+		log.Fatal(errSL)
+	}
+	fmt.Println("#eSubscriptionLines: ", len(eo.SubscriptionLines))
+
+	//
+	// get Subscriptions
+	//
+	errS := eo.getSubscriptions()
+	if errS != nil {
+		log.Fatal(errS)
+	}
+	fmt.Println("#eSubscriptions: ", len(eo.Subscriptions))
+
+	bs := make([]interface{}, len(eo.Subscriptions))
+	for i := range eo.Subscriptions {
+		bs[i] = eo.Subscriptions[i].ToBq()
+	}
+
+	errInsert2 := eo.BigQuery.InsertSlice(eo.BigQueryDataset, bs, SubscriptionBq{}, "subscriptions_temp")
+	if errInsert2 != nil {
+		log.Fatal(errInsert2)
+	}
+
+	//
+	// get Divisions
+	//
+
 	errD := eo.getDivisions()
 	if errD != nil {
 		log.Fatal(errD)
@@ -136,7 +164,7 @@ func (eo *ExactOnline) GetAll() error {
 	fmt.Println("#eDivisions: ", len(eo.Divisions))
 
 	//
-	// get eContacts
+	// get Contacts
 	//
 	errC := eo.getContacts()
 	if errC != nil {
@@ -156,7 +184,7 @@ func (eo *ExactOnline) GetAll() error {
 	//fmt.Println(string(jsonString))
 
 	//
-	// get eAccounts
+	// get Accounts
 	//
 	errA := eo.getAccounts()
 	if errA != nil {
@@ -169,45 +197,33 @@ func (eo *ExactOnline) GetAll() error {
 	}*/
 	fmt.Println("#eAccounts: ", len(eo.Accounts))
 
-	// print
-	//jsonString, _ = json.Marshal(eo.Accounts)
-	//fmt.Println(string(jsonString))
-
-	//
-	// get eSubscriptions
-	//
-	errS := eo.getSubscriptions()
-	if errS != nil {
-		log.Fatal(errS)
+	b1 := make([]interface{}, len(eo.Accounts))
+	for i := range eo.Accounts {
+		b1[i] = eo.Accounts[i].ToBq()
 	}
-	fmt.Println("#eSubscriptions: ", len(eo.Subscriptions))
 
-	b := make([]interface{}, len(eo.Subscriptions))
-	for i := range eo.Subscriptions {
-		b[i] = eo.Subscriptions[i]
+	errInsert := eo.BigQuery.InsertSlice(eo.BigQueryDataset, b1, AccountBq{}, "accounts_temp")
+	if errInsert != nil {
+		log.Fatal(errInsert)
 	}
-	/*
-		bq := new(bigquery.BigQuery)
-		SliceToBigQuery(b, eSubscription{})*/
 
-	// print
-	//jsonString, _ = json.Marshal(eo.Subscriptions)
-	//fmt.Println(string(jsonString))
-
-	//
-	// get eSubscriptionLines
-	//
-	errSL := eo.getSubscriptionLines()
-	if errSL != nil {
-		log.Fatal(errSL)
-	}
-	fmt.Println("#eSubscriptionLines: ", len(eo.SubscriptionLines))
-
-	// print
-	//jsonString, _ = json.Marshal(eo.SubscriptionLines)
-	//fmt.Println(string(jsonString))
+	eo.GetSubscriptionsForAccounts()
 
 	return nil
+}
+
+func (eo *ExactOnline) GetSubscriptionsForAccounts() {
+	count := 0
+	for _, a := range eo.Accounts {
+		for _, s := range eo.Subscriptions {
+			if a.ID == s.OrderedBy {
+				a.Subscriptions = append(a.Subscriptions, s)
+				count++
+			}
+		}
+	}
+
+	//fmt.Println("GetSubscriptionsForAccounts:", count)
 }
 
 // wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
@@ -273,17 +289,6 @@ func (eo *ExactOnline) GetMe() error {
 	}
 
 	eo.Me = me[0]
-
-	return nil
-}
-
-func (eo *ExactOnline) getSubscriptions() error {
-	urlStr := fmt.Sprintf("https://start.exactonline.nl/api/v1/%s/subscription/Subscriptions", strconv.Itoa(eo.Me.CurrentDivision))
-
-	_, err := eo.get(urlStr, &eo.Subscriptions)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

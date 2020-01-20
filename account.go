@@ -9,19 +9,52 @@ import (
 // Account stores account from exactonline
 //
 type Account struct {
-	ID                types.GUID `json:"ID"`
-	Name              string     `json:"Name"`
-	ChamberOfCommerce string     `json:"ChamberOfCommerce"`
-	AddressLine1      string     `json:"AddressLine1"`
-	Postcode          string     `json:"Postcode"`
-	City              string     `json:"City"`
-	State             string     `json:"State"`
-	//StateName              string     `json:"StateName"`
-	Country string `json:"Country"`
-	//CountryName            string     `json:"CountryName"`
+	ID                     types.GUID `json:"ID"`
+	Name                   string     `json:"Name"`
+	ChamberOfCommerce      string     `json:"ChamberOfCommerce"`
+	AddressLine1           string     `json:"AddressLine1"`
+	Postcode               string     `json:"Postcode"`
+	City                   string     `json:"City"`
+	State                  string     `json:"State"`
+	Country                string     `json:"Country"`
 	AccountManager         types.GUID `json:"AccountManager"`
 	AccountManagerFullName string     `json:"AccountManagerFullName"`
 	MainContact            types.GUID `json:"MainContact"`
+	Subscriptions          []Subscription
+}
+
+// AccountBq stores account from exactonline
+//
+type AccountBq struct {
+	ID                     string
+	Name                   string
+	ChamberOfCommerce      string
+	AddressLine1           string
+	Postcode               string
+	City                   string
+	State                  string
+	Country                string
+	AccountManager         string
+	AccountManagerFullName string
+	MainContact            string
+}
+
+// ToBq convert Subscription to SubscriptionBq
+//
+func (a *Account) ToBq() *AccountBq {
+	return &AccountBq{
+		a.ID.String(),
+		a.Name,
+		a.ChamberOfCommerce,
+		a.AddressLine1,
+		a.Postcode,
+		a.City,
+		a.State,
+		a.Country,
+		a.AccountManager.String(),
+		a.AccountManagerFullName,
+		a.MainContact.String(),
+	}
 }
 
 // Values return comma separated values of Account
