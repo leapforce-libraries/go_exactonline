@@ -20,8 +20,8 @@ type Subscription struct {
 	OrderedBy                      types.GUID `json:"OrderedBy"`
 	SubscriptionType               types.GUID `json:"SubscriptionType"`
 	SubscriptionTypeCode           string     `json:"SubscriptionTypeCode"`
-	StartDate                      types.Date `json:"StartDate"`
-	EndDate                        types.Date `json:"EndDate"`
+	StartDate                      types.Date `json:"StartDate,omitempty"`
+	EndDate                        types.Date `json:"EndDate,omitempty"`
 	SubscriptionLines              []SubscriptionLine
 }
 
@@ -56,6 +56,24 @@ func (s *Subscription) ToBq() *SubscriptionBq {
 		s.EndDate.Time,
 		//s.SubscriptionLines,
 	}
+}
+
+// ToBq convert Subscription to SubscriptionBq
+//
+func (s *Subscription) IsValid(timestamp time.Time) bool {
+	if s.StartDate != *new(types.Date) {
+		if s.StartDate.After(timestamp) {
+			return false
+		}
+	}
+
+	if s.EndDate != *new(types.Date) {
+		if s.EndDate.Before(timestamp) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription, error) {
@@ -112,6 +130,7 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 			return err
 		}
 		fmt.Println("len(sub.SubscriptionLines)", len(account.Subscriptions[i].SubscriptionLines))
+		fmt.Println("sd/ed", account.Subscriptions[i].StartDate, account.Subscriptions[i].EndDate)
 	}
 
 	fmt.Println("GetSubscriptionsByAccount:", len(account.Subscriptions))
