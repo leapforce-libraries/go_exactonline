@@ -32,28 +32,55 @@ func (c *Contact) Values() string {
 		c.Email)
 }
 
-func (eo *ExactOnline) getContacts() error {
+func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {
 	selectFields := GetJsonTaggedFieldNames(Contact{})
 	urlStr := fmt.Sprintf("%s%s/crm/Contacts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	if filter != "" {
+		urlStr += fmt.Sprintf("&$filter=%s", filter)
+	}
 	//fmt.Println(urlStr)
 
-	eo.Contacts = []Contact{}
+	contacts := []Contact{}
 
 	for urlStr != "" {
 		co := []Contact{}
 
-		str, err := eo.get(urlStr, &co)
+		str, err := eo.Get(urlStr, &co)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		eo.Contacts = append(eo.Contacts, co...)
+		contacts = append(contacts, co...)
 
 		urlStr = str
-		//urlStr = "" //temp
 	}
 
+	return &contacts, nil
+}
+
+func (eo *ExactOnline) GetContacts() error {
+	co, err := eo.GetContactsInternal("")
+	if err != nil {
+		return err
+	}
+	eo.Contacts = *co
+
 	return nil
+}
+
+func (eo *ExactOnline) GetContactsByEmail(email string) ([]Contact, error) {
+	filter := fmt.Sprintf("Email eq '%s'", email)
+	contacts := []Contact{}
+
+	co, err := eo.GetContactsInternal(filter)
+	if err != nil {
+		return contacts, nil
+	}
+	contacts = *co
+
+	fmt.Println("GetContactsByEmail:", email, "len:", len(contacts))
+
+	return contacts, nil
 }
 
 func (eo *ExactOnline) UpdateContact(c *Contact) error {
@@ -69,7 +96,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 
 	fmt.Println("update", urlStr, c.Email)
 
-	err := eo.put(urlStr, data)
+	err := eo.Put(urlStr, data)
 	if err != nil {
 		return err
 	}
@@ -95,7 +122,7 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 
 	fmt.Println("insert", urlStr, c.Account.String(), c.Email)
 
-	err := eo.post(urlStr, data, &co)
+	err := eo.Post(urlStr, data, &co)
 	if err != nil {
 		fmt.Println(err)
 		return err

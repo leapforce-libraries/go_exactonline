@@ -11,7 +11,7 @@ type Division struct {
 	Code int `json:"Code"`
 }
 
-func (eo *ExactOnline) getDivisions() error {
+func (eo *ExactOnline) GetDivisions() error {
 	urlStr := fmt.Sprintf("%s%s/hrm/Divisions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
 
 	eo.Divisions = []Division{}
@@ -19,7 +19,7 @@ func (eo *ExactOnline) getDivisions() error {
 	for urlStr != "" {
 		d := []Division{}
 
-		str, err := eo.get(urlStr, &d)
+		str, err := eo.Get(urlStr, &d)
 		if err != nil {
 			return err
 		}

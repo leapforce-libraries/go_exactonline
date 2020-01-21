@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -35,6 +34,7 @@ type ExactOnline struct {
 	Me                Me
 	Contacts          []Contact
 	Accounts          []Account
+	SubscriptionTypes []SubscriptionType
 	Subscriptions     []Subscription
 	SubscriptionLines []SubscriptionLine
 	Divisions         []Division
@@ -104,130 +104,25 @@ type Results struct {
 	Next    string          `json:"__next"`
 }
 
-//
-// getAll retrieves all tables
-//
-func (eo *ExactOnline) GetAll() error {
-	//
-	// get eMe
-	//
-	errMe := eo.GetMe()
-	if errMe != nil {
-		log.Fatal(errMe)
-	}
-
-	// print
-	fmt.Printf("CurrentDivision:")
-	fmt.Println(eo.Me.CurrentDivision)
-
-	//
-	// get SubscriptionLines
-	//
-	errSL := eo.getSubscriptionLines()
-	if errSL != nil {
-		log.Fatal(errSL)
-	}
-	fmt.Println("#eSubscriptionLines: ", len(eo.SubscriptionLines))
-
-	//
-	// get Subscriptions
-	//
-	errS := eo.getSubscriptions()
-	if errS != nil {
-		log.Fatal(errS)
-	}
-	fmt.Println("#eSubscriptions: ", len(eo.Subscriptions))
-
-	bs := make([]interface{}, len(eo.Subscriptions))
-	for i := range eo.Subscriptions {
-		bs[i] = eo.Subscriptions[i].ToBq()
-	}
-
-	errInsert2 := eo.BigQuery.InsertSlice(eo.BigQueryDataset, bs, SubscriptionBq{}, "subscriptions_temp")
-	if errInsert2 != nil {
-		log.Fatal(errInsert2)
-	}
-
-	//
-	// get Divisions
-	//
-
-	errD := eo.getDivisions()
-	if errD != nil {
-		log.Fatal(errD)
-	}
-	/*for _, co := range eo.Contacts {
-		//jsonString, _ := json.Marshal(a)
-		//fmt.Println(string(jsonString))
-		fmt.Println("Account:", co.Account.String(), "Contact:", co.ID.String())
-	}*/
-	fmt.Println("#eDivisions: ", len(eo.Divisions))
-
-	//
-	// get Contacts
-	//
-	errC := eo.getContacts()
-	if errC != nil {
-		log.Fatal(errC)
-	}
-	/*for _, co := range eo.Contacts {
-		//jsonString, _ := json.Marshal(a)
-		//fmt.Println(string(jsonString))
-		oldValues := fmt.Sprintln(co)
-		fmt.Println(oldValues)
-		//fmt.Println("Account:", co.Account.String(), "Contact:", co.ID.String())
-	}*/
-	fmt.Println("#eContacts: ", len(eo.Contacts))
-
-	// print
-	//jsonString, _ := json.Marshal(eo.Contacts)
-	//fmt.Println(string(jsonString))
-
-	//
-	// get Accounts
-	//
-	errA := eo.getAccounts()
-	if errA != nil {
-		log.Fatal(errA)
-	}
-	/*for _, a := range eo.Accounts {
-		//jsonString, _ := json.Marshal(a)
-		//fmt.Println(string(jsonString))
-		fmt.Println(a.ID.String())
-	}*/
-	fmt.Println("#eAccounts: ", len(eo.Accounts))
-
-	b1 := make([]interface{}, len(eo.Accounts))
-	for i := range eo.Accounts {
-		b1[i] = eo.Accounts[i].ToBq()
-	}
-
-	errInsert := eo.BigQuery.InsertSlice(eo.BigQueryDataset, b1, AccountBq{}, "accounts_temp")
-	if errInsert != nil {
-		log.Fatal(errInsert)
-	}
-
-	eo.GetSubscriptionsForAccounts()
-
-	return nil
-}
-
-func (eo *ExactOnline) GetSubscriptionsForAccounts() {
-	count := 0
-	for _, a := range eo.Accounts {
-		for _, s := range eo.Subscriptions {
-			if a.ID == s.OrderedBy {
-				a.Subscriptions = append(a.Subscriptions, s)
-				count++
+func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) {
+	for _, s := range eo.Subscriptions {
+		if ac.ID == s.OrderedBy {
+			for _, sl := range eo.SubscriptionLines {
+				if s.EntryID == sl.EntryID {
+					s.SubscriptionLines = append(s.SubscriptionLines, sl)
+				}
 			}
+			fmt.Println("len(sub.SubscriptionLines)", len(s.SubscriptionLines))
+
+			ac.Subscriptions = append(ac.Subscriptions, s)
 		}
 	}
 
-	//fmt.Println("GetSubscriptionsForAccounts:", count)
+	//fmt.Println("FindSubscriptionsForAccount:", len(ac.Subscriptions))
 }
 
 // wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
-func (eo *ExactOnline) wait() error {
+func (eo *ExactOnline) Wait() error {
 	if eo.XRateLimitMinutelyRemaining < 1 {
 		reset := time.Unix(eo.XRateLimitMinutelyReset, 0)
 		ms := reset.Sub(time.Now()).Milliseconds()
@@ -264,8 +159,8 @@ func (eo *ExactOnline) wait() error {
 		return nil*/
 }
 
-func (eo *ExactOnline) getHttpClient() (*http.Client, error) {
-	err := eo.wait()
+func (eo *ExactOnline) GetHttpClient() (*http.Client, error) {
+	err := eo.Wait()
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +178,7 @@ func (eo *ExactOnline) GetMe() error {
 
 	me := []Me{}
 
-	_, err := eo.get(urlStr, &me)
+	_, err := eo.Get(urlStr, &me)
 	if err != nil {
 		return err
 	}
@@ -293,21 +188,10 @@ func (eo *ExactOnline) GetMe() error {
 	return nil
 }
 
-func (eo *ExactOnline) getSubscriptionLines() error {
-	urlStr := fmt.Sprintf("https://start.exactonline.nl/api/v1/%s/subscription/SubscriptionLines", strconv.Itoa(eo.Me.CurrentDivision))
-
-	_, err := eo.get(urlStr, &eo.SubscriptionLines)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 //
 // generic methods
 //
-func (eo *ExactOnline) readRateLimitHeaders(res *http.Response) {
+func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	//fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
 	//fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))
 	remaining, errRem := strconv.Atoi(res.Header.Get("X-RateLimit-Minutely-Remaining"))
@@ -318,8 +202,8 @@ func (eo *ExactOnline) readRateLimitHeaders(res *http.Response) {
 	}
 }
 
-func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
-	client, errClient := eo.getHttpClient()
+func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
+	client, errClient := eo.GetHttpClient()
 	if errClient != nil {
 		return "", errClient
 	}
@@ -339,7 +223,7 @@ func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 		return "", err
 	}
 
-	eo.readRateLimitHeaders(res)
+	eo.ReadRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
@@ -368,8 +252,8 @@ func (eo *ExactOnline) get(url string, model interface{}) (string, error) {
 	return response.Data.Next, nil
 }
 
-func (eo *ExactOnline) put(url string, values map[string]string) error {
-	client, errClient := eo.getHttpClient()
+func (eo *ExactOnline) Put(url string, values map[string]string) error {
+	client, errClient := eo.GetHttpClient()
 	if errClient != nil {
 		return errClient
 	}
@@ -394,7 +278,7 @@ func (eo *ExactOnline) put(url string, values map[string]string) error {
 		return err
 	}
 
-	eo.readRateLimitHeaders(res)
+	eo.ReadRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
@@ -409,8 +293,8 @@ func (eo *ExactOnline) put(url string, values map[string]string) error {
 	return nil
 }
 
-func (eo *ExactOnline) post(url string, values map[string]string, model interface{}) error {
-	client, errClient := eo.getHttpClient()
+func (eo *ExactOnline) Post(url string, values map[string]string, model interface{}) error {
+	client, errClient := eo.GetHttpClient()
 	if errClient != nil {
 		return errClient
 	}
@@ -436,7 +320,7 @@ func (eo *ExactOnline) post(url string, values map[string]string, model interfac
 		return err
 	}
 
-	eo.readRateLimitHeaders(res)
+	eo.ReadRateLimitHeaders(res)
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {

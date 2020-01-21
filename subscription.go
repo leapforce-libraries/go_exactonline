@@ -18,10 +18,11 @@ type Subscription struct {
 	InvoiceToContactPersonFullName string     `json:"InvoiceToContactPersonFullName"`
 	InvoiceToName                  string     `json:"InvoiceToName"`
 	OrderedBy                      types.GUID `json:"OrderedBy"`
+	SubscriptionType               types.GUID `json:"SubscriptionType"`
 	SubscriptionTypeCode           string     `json:"SubscriptionTypeCode"`
 	StartDate                      types.Date `json:"StartDate"`
 	EndDate                        types.Date `json:"EndDate"`
-	//SubscriptionLines              []SubscriptionLine `json:"SubscriptionLines"`
+	SubscriptionLines              []SubscriptionLine
 }
 
 // SubscriptionBq equals type Subscription except fields of type Date that are converted to type Time, to be insertable in BigQuery
@@ -37,7 +38,6 @@ type SubscriptionBq struct {
 	SubscriptionTypeCode           string
 	StartDate                      time.Time
 	EndDate                        time.Time
-	//SubscriptionLines              []SubscriptionLine `json:"SubscriptionLines"`
 }
 
 // ToBq convert Subscription to SubscriptionBq
@@ -58,43 +58,80 @@ func (s *Subscription) ToBq() *SubscriptionBq {
 	}
 }
 
-func (eo *ExactOnline) getSubscriptions() error {
+func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription, error) {
 	selectFields := GetJsonTaggedFieldNames(Subscription{})
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	if filter != "" {
+		urlStr += fmt.Sprintf("&$filter=%s", filter)
+	}
 	//fmt.Println(urlStr)
 
-	eo.Subscriptions = []Subscription{}
+	subscriptions := []Subscription{}
 
 	for urlStr != "" {
-		su := []Subscription{}
+		sc := []Subscription{}
 
-		str, err := eo.get(urlStr, &su)
+		str, err := eo.Get(urlStr, &sc)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		eo.Subscriptions = append(eo.Subscriptions, su...)
-		//fmt.Println(len(eo.Accounts))
+		subscriptions = append(subscriptions, sc...)
 
 		urlStr = str
-		//urlStr = "" //temp
 	}
+
+	return &subscriptions, nil
+}
+
+func (eo *ExactOnline) GetSubscriptions() error {
+	sub, err := eo.GetSubscriptionsInternal("")
+	if err != nil {
+		return err
+	}
+	eo.Subscriptions = *sub
 
 	return nil
 }
 
-func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+// GetSubscriptionsByAccount return all Subscriptions for a single Account
+//
+func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
+	filter := fmt.Sprintf("OrderedBy eq guid'%s'", account.ID.String())
 
-	data := make(map[string]string)
-	data["SubscriptionTypeCode"] = s.SubscriptionTypeCode
-
-	err := eo.put(urlStr, data)
+	sub, err := eo.GetSubscriptionsInternal(filter)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("updated SubscriptionTypeCode", urlStr, s.SubscriptionTypeCode)
+	account.Subscriptions = *sub
+
+	for i := range account.Subscriptions {
+		err = eo.GetSubscriptionLinesBySubscription(&account.Subscriptions[i])
+		if err != nil {
+			return err
+		}
+		fmt.Println("len(sub.SubscriptionLines)", len(account.Subscriptions[i].SubscriptionLines))
+	}
+
+	fmt.Println("GetSubscriptionsByAccount:", len(account.Subscriptions))
+	return nil
+}
+
+// UpdateSubscription updates Subscription in ExactOnline
+//
+func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+
+	data := make(map[string]string)
+	data["SubscriptionType"] = s.SubscriptionType.String()
+
+	err := eo.Put(urlStr, data)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("updated SubscriptionType", urlStr, s.SubscriptionType)
 
 	//time.Sleep(1 * time.Second)
 

@@ -70,29 +70,53 @@ func (a *Account) Values() string {
 		a.Country)
 }
 
-func (eo *ExactOnline) getAccounts() error {
+func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {
 	selectFields := GetJsonTaggedFieldNames(Account{})
 	urlStr := fmt.Sprintf("%s%s/crm/Accounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	if filter != "" {
+		urlStr += fmt.Sprintf("&$filter=%s", filter)
+	}
 	//fmt.Println(urlStr)
 
-	eo.Accounts = []Account{}
+	accounts := []Account{}
 
 	for urlStr != "" {
 		ac := []Account{}
 
-		str, err := eo.get(urlStr, &ac)
+		str, err := eo.Get(urlStr, &ac)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		eo.Accounts = append(eo.Accounts, ac...)
-		//fmt.Println(len(eo.Accounts))
+		accounts = append(accounts, ac...)
 
 		urlStr = str
-		//urlStr = "" //temp
 	}
 
+	return &accounts, nil
+}
+
+func (eo *ExactOnline) GetAccounts() error {
+	acc, err := eo.GetAccountsInternal("")
+	if err != nil {
+		return err
+	}
+	eo.Accounts = *acc
+
 	return nil
+}
+
+func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) ([]Account, error) {
+	filter := fmt.Sprintf("ChamberOfCommerce eq '%s'", chamberOfCommerce)
+	accounts := []Account{}
+
+	acc, err := eo.GetAccountsInternal(filter)
+	if err != nil {
+		return accounts, err
+	}
+	accounts = *acc
+
+	return accounts, nil
 }
 
 func (eo *ExactOnline) UpdateAccount(a *Account) error {
@@ -113,7 +137,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 
 	fmt.Println("update", urlStr, a.Country, a.Name)
 
-	err := eo.put(urlStr, data)
+	err := eo.Put(urlStr, data)
 	if err != nil {
 		return err
 	}
@@ -129,7 +153,7 @@ func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
 	data := make(map[string]string)
 	data["MainContact"] = a.MainContact.String()
 
-	err := eo.put(urlStr, data)
+	err := eo.Put(urlStr, data)
 	if err != nil {
 		return err
 	}
@@ -156,7 +180,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 
 	fmt.Println("insert", urlStr, a.Country, a.Name)
 
-	err := eo.post(urlStr, data, &ac)
+	err := eo.Post(urlStr, data, &ac)
 	if err != nil {
 		fmt.Println(err)
 		return err
