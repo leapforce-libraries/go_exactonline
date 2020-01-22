@@ -1,4 +1,4 @@
-module github.com/Leapforce-nl/go_exactonline
+module github.com/leapforce-nl/go_exactonline
 
 go 1.13
 
