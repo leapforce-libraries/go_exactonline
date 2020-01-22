@@ -10,7 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"types"
+
+	types "github.com/leapforce-nl/go_types"
 )
 
 type Token struct {

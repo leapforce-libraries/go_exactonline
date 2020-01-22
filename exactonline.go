@@ -1,7 +1,7 @@
 package exactonline
 
 import (
-	"bigquerytools"
+	"github.com/leapforce-nl/go_bigquerytools"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,7 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"types"
+
+	types "github.com/leapforce-nl/go_types"
 )
 
 // ExactOnline stores exactonline configuration
