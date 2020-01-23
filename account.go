@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	types "github.com/leapforce-nl/go_types"
+	types "types"
 )
 
 // Account stores account from exactonline
@@ -136,7 +136,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	fmt.Println("update", urlStr, a.Country, a.Name)
+	fmt.Println("\nUPDATED Account", urlStr, a.Country, a.Name)
 
 	err := eo.Put(urlStr, data)
 	if err != nil {
@@ -179,7 +179,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	//fmt.Println(urlStr)
 	ac := Account{}
 
-	fmt.Println("insert", urlStr, a.Country, a.Name)
+	fmt.Println("\nINSERTED Account", urlStr, a.Country, a.Name)
 
 	err := eo.Post(urlStr, data, &ac)
 	if err != nil {
@@ -187,6 +187,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 		return err
 	}
 
+	fmt.Println("\nNEW Account", ac.ID)
 	a.ID = ac.ID
 
 	//fmt.Println("Inserted:", a.ID.String())

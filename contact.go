@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	types "github.com/leapforce-nl/go_types"
+	types "types"
 )
 
 // Contact stores Contact from exactonline
@@ -79,7 +79,7 @@ func (eo *ExactOnline) GetContactsByEmail(email string) ([]Contact, error) {
 	}
 	contacts = *co
 
-	fmt.Println("GetContactsByEmail:", email, "len:", len(contacts))
+	//fmt.Println("GetContactsByEmail:", email, "len:", len(contacts))
 
 	return contacts, nil
 }
@@ -95,7 +95,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	data["Title"] = c.Title
 	data["Email"] = c.Email
 
-	fmt.Println("update", urlStr, c.Email)
+	fmt.Println("\nUPDATED Contact", urlStr, c.Email)
 
 	err := eo.Put(urlStr, data)
 	if err != nil {
@@ -121,7 +121,7 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 
 	co := Contact{}
 
-	fmt.Println("insert", urlStr, c.Account.String(), c.Email)
+	fmt.Println("\nINSERTED Contact", urlStr, c.ID, c.Account.String(), c.Email)
 
 	err := eo.Post(urlStr, data, &co)
 	if err != nil {
@@ -129,9 +129,8 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 		return err
 	}
 
+	fmt.Println("\nNEW Contact", co.ID)
 	c.ID = co.ID
-
-	//fmt.Println("Inserted:", a.ID.String())
 
 	return nil
 }

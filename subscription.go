@@ -1,11 +1,12 @@
 package exactonline
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
-	types "github.com/leapforce-nl/go_types"
+	types "types"
 )
 
 // Subscription stores Subscription from exactonline
@@ -129,12 +130,31 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("len(sub.SubscriptionLines)", len(account.Subscriptions[i].SubscriptionLines))
-		fmt.Println("sd/ed", account.Subscriptions[i].StartDate, account.Subscriptions[i].EndDate)
+		//fmt.Println("len(sub.SubscriptionLines)", len(account.Subscriptions[i].SubscriptionLines))
+		//fmt.Println("sd/ed", account.Subscriptions[i].StartDate, account.Subscriptions[i].EndDate)
 	}
 
-	fmt.Println("GetSubscriptionsByAccount:", len(account.Subscriptions))
+	//fmt.Println("GetSubscriptionsByAccount:", len(account.Subscriptions))
 	return nil
+}
+
+type SubscriptionUpdate struct {
+	SubscriptionType types.GUID `json:"SubscriptionType"`
+	OrderedBy        types.GUID `json:"OrderedBy"`
+	InvoiceTo        types.GUID `json:"InvoiceTo"`
+	StartDate        types.Date `json:"StartDate"`
+	EndDate          types.Date `json:"EndDate"`
+	Description      string     `json:"Description"`
+}
+
+type SubscriptionInsert struct {
+	SubscriptionType  types.GUID         `json:"SubscriptionType"`
+	OrderedBy         types.GUID         `json:"OrderedBy"`
+	InvoiceTo         types.GUID         `json:"InvoiceTo"`
+	StartDate         types.Date         `json:"StartDate"`
+	EndDate           types.Date         `json:"EndDate"`
+	Description       string             `json:"Description"`
+	SubscriptionLines []SubscriptionLine `json:"SubscriptionLines"`
 }
 
 // UpdateSubscription updates Subscription in ExactOnline
@@ -142,17 +162,81 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
 
-	data := make(map[string]string)
-	data["SubscriptionType"] = s.SubscriptionType.String()
+	/*sd := new(types.Date)
+	if !s.StartDate.IsZero() {
+		sd = &s.StartDate
+	}
+	ed := new(types.Date)
+	if !s.EndDate.IsZero() {
+		ed = &s.EndDate
+	}*/
+	su := SubscriptionUpdate{
+		s.SubscriptionType,
+		s.OrderedBy,
+		s.InvoiceTo,
+		s.StartDate,
+		s.EndDate,
+		s.Description + "_updated",
+	}
 
-	err := eo.Put(urlStr, data)
+	b, err := json.Marshal(su)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("updated SubscriptionType", urlStr, s.SubscriptionType)
+	fmt.Println("\nUPDATED Subscription", urlStr, su)
 
-	//time.Sleep(1 * time.Second)
+	err = eo.PutBytes(urlStr, b)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// InsertSubscription inserts Subscription in ExactOnline
+//
+func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+
+	/*sd := new(types.Date)
+	if !s.StartDate.IsZero() {
+		sd = &s.StartDate
+	}
+	ed := new(types.Date)
+	if !s.EndDate.IsZero() {
+		ed = &s.EndDate
+	}*/
+	si := SubscriptionInsert{
+		s.SubscriptionType,
+		s.OrderedBy,
+		s.InvoiceTo,
+		s.StartDate,
+		s.EndDate,
+		s.Description + "_inserted",
+		s.SubscriptionLines,
+	}
+
+	b, err := json.Marshal(si)
+	if err != nil {
+		return err
+	}
+
+	type HasEntryID struct {
+		EntryID types.GUID `json:"EntryID"`
+	}
+
+	he := HasEntryID{}
+
+	fmt.Println("\nINSERTED Subscription", urlStr, si)
+
+	err = eo.PostBytes(urlStr, b, &he)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("\nNEW Subscription", he.EntryID)
+	s.EntryID = he.EntryID
 
 	return nil
 }

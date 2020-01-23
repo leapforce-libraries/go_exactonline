@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"strconv"
 
-	types "github.com/leapforce-nl/go_types"
+	types "types"
 )
 
 // SubscriptionLine stores SubscriptionLine from exactonline
 //
 type SubscriptionLine struct {
-	EntryID  types.GUID `json:"Item"`
+	EntryID  types.GUID `json:"EntryID"`
 	Item     types.GUID `json:"Item"`
 	FromDate types.Date `json:"FromDate"`
+	UnitCode string     `json:"UnitCode"`
 }
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
@@ -62,6 +63,6 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 	}
 	subscription.SubscriptionLines = *sub
 
-	fmt.Println("GetSubscriptionLinesBySubscription:", len(subscription.SubscriptionLines))
+	//fmt.Println("GetSubscriptionLinesBySubscription:", len(subscription.SubscriptionLines))
 	return nil
 }

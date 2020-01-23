@@ -1,9 +1,10 @@
 package exactonline
 
 import (
-	"github.com/leapforce-nl/go_bigquerytools"
+	bigquerytools "bigquerytools"
 	"bytes"
 	"encoding/json"
+	"errortools"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	types "github.com/leapforce-nl/go_types"
+	types "types"
 )
 
 // ExactOnline stores exactonline configuration
@@ -209,6 +210,8 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 		return "", errClient
 	}
 
+	//fmt.Println(url)
+
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
@@ -228,10 +231,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		fmt.Println("Status", res.Status)
-		fmt.Println(url)
-		fmt.Println(eo.Token.AccessToken)
-		return "", &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
+		return "", eo.PrintError(res)
 	}
 
 	defer res.Body.Close()
@@ -254,14 +254,40 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 }
 
 func (eo *ExactOnline) Put(url string, values map[string]string) error {
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(values)
+
+	return eo.PutBuffer(url, buf)
+}
+
+func (eo *ExactOnline) PutBytes(url string, b []byte) error {
+	return eo.PutBuffer(url, bytes.NewBuffer(b))
+}
+
+func (eo *ExactOnline) PrintError(res *http.Response) error {
+	fmt.Println("Status", res.Status)
+
+	b, err := ioutil.ReadAll(res.Body)
+	errortools.Fatal(err)
+
+	ee := ExactOnlineError{}
+
+	err = json.Unmarshal(b, &ee)
+	if err != nil {
+		fmt.Println("errUnmarshal1")
+		//errortools.Fatal(err)
+	}
+
+	fmt.Println(ee.Err.Message.Value)
+
+	return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
+}
+
+func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 	client, errClient := eo.GetHttpClient()
 	if errClient != nil {
 		return errClient
 	}
-
-	//jsonValue, _ := json.Marshal(values)
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(values)
 
 	req, err := http.NewRequest(http.MethodPut, url, buf)
 	if err != nil {
@@ -283,10 +309,9 @@ func (eo *ExactOnline) Put(url string, values map[string]string) error {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		fmt.Println("Status", res.Status)
-		fmt.Println(url, values)
-		fmt.Println(eo.Token.AccessToken)
-		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
+		return eo.PrintError(res)
+		//eo.PrintError(res)
+		//return &types.ErrorString{fmt.Sprintf("StatusCode %s", res.StatusCode)}
 	}
 
 	//fmt.Println(res)
@@ -295,13 +320,21 @@ func (eo *ExactOnline) Put(url string, values map[string]string) error {
 }
 
 func (eo *ExactOnline) Post(url string, values map[string]string, model interface{}) error {
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(values)
+
+	return eo.PostBuffer(url, buf, model)
+}
+
+func (eo *ExactOnline) PostBytes(url string, b []byte, model interface{}) error {
+	return eo.PostBuffer(url, bytes.NewBuffer(b), model)
+}
+
+func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface{}) error {
 	client, errClient := eo.GetHttpClient()
 	if errClient != nil {
 		return errClient
 	}
-
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(values)
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -325,10 +358,7 @@ func (eo *ExactOnline) Post(url string, values map[string]string, model interfac
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		fmt.Println("Status", res.Status)
-		fmt.Println(url, values)
-		fmt.Println(eo.Token.AccessToken)
-		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v: %s", res.StatusCode, err.Error())}
+		return eo.PrintError(res)
 	}
 
 	defer res.Body.Close()
