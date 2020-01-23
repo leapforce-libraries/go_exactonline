@@ -148,13 +148,14 @@ type SubscriptionUpdate struct {
 }
 
 type SubscriptionInsert struct {
-	SubscriptionType  types.GUID         `json:"SubscriptionType"`
-	OrderedBy         types.GUID         `json:"OrderedBy"`
-	InvoiceTo         types.GUID         `json:"InvoiceTo"`
-	StartDate         types.Date         `json:"StartDate"`
-	EndDate           types.Date         `json:"EndDate"`
-	Description       string             `json:"Description"`
-	SubscriptionLines []SubscriptionLine `json:"SubscriptionLines"`
+	EntryID           types.GUID               `json:"-"`
+	SubscriptionType  types.GUID               `json:"SubscriptionType"`
+	OrderedBy         types.GUID               `json:"OrderedBy"`
+	InvoiceTo         types.GUID               `json:"InvoiceTo"`
+	StartDate         types.Date               `json:"StartDate"`
+	EndDate           types.Date               `json:"EndDate"`
+	Description       string                   `json:"Description"`
+	SubscriptionLines []SubscriptionLineInsert `json:"SubscriptionLines"`
 }
 
 // UpdateSubscription updates Subscription in ExactOnline
@@ -176,7 +177,7 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 		s.InvoiceTo,
 		s.StartDate,
 		s.EndDate,
-		s.Description + "_updated",
+		s.Description,
 	}
 
 	b, err := json.Marshal(su)
@@ -196,7 +197,7 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 
 // InsertSubscription inserts Subscription in ExactOnline
 //
-func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
+func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
 
 	/*sd := new(types.Date)
@@ -207,17 +208,17 @@ func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
 	if !s.EndDate.IsZero() {
 		ed = &s.EndDate
 	}*/
-	si := SubscriptionInsert{
+	/*si := SubscriptionInsert{
 		s.SubscriptionType,
 		s.OrderedBy,
 		s.InvoiceTo,
 		s.StartDate,
 		s.EndDate,
-		s.Description + "_inserted",
+		s.Description,
 		s.SubscriptionLines,
-	}
+	}*/
 
-	b, err := json.Marshal(si)
+	b, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
@@ -228,7 +229,7 @@ func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
 
 	he := HasEntryID{}
 
-	fmt.Println("\nINSERTED Subscription", urlStr, si)
+	fmt.Println("\nINSERTED Subscription", urlStr, s)
 
 	err = eo.PostBytes(urlStr, b, &he)
 	if err != nil {

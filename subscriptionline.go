@@ -16,6 +16,13 @@ type SubscriptionLine struct {
 	UnitCode string     `json:"UnitCode"`
 }
 
+type SubscriptionLineInsert struct {
+	EntryID  types.GUID `json:"-"`
+	Item     types.GUID `json:"Item"`
+	FromDate types.Date `json:"FromDate"`
+	UnitCode string     `json:"UnitCode"`
+}
+
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
 	selectFields := GetJsonTaggedFieldNames(SubscriptionLine{})
 	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)

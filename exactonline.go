@@ -40,6 +40,7 @@ type ExactOnline struct {
 	Subscriptions     []Subscription
 	SubscriptionLines []SubscriptionLine
 	Divisions         []Division
+	Items             []Item
 	Token             *Token
 	// timer
 	//LastApiCall time.Time
@@ -106,7 +107,7 @@ type Results struct {
 	Next    string          `json:"__next"`
 }
 
-func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) {
+func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) error {
 	for _, s := range eo.Subscriptions {
 		if ac.ID == s.OrderedBy {
 			for _, sl := range eo.SubscriptionLines {
@@ -121,6 +122,7 @@ func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) {
 	}
 
 	//fmt.Println("FindSubscriptionsForAccount:", len(ac.Subscriptions))
+	return nil
 }
 
 // wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
@@ -231,6 +233,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println(eo.Token.AccessToken)
 		return "", eo.PrintError(res)
 	}
 
@@ -309,6 +312,7 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
 		//eo.PrintError(res)
 		//return &types.ErrorString{fmt.Sprintf("StatusCode %s", res.StatusCode)}
@@ -358,6 +362,7 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
 	}
 

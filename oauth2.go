@@ -53,6 +53,9 @@ func (t *Token) IsExpired() (bool, error) {
 }
 
 func (eo *ExactOnline) GetToken(data url.Values) error {
+	guid := types.NewGUID()
+	fmt.Println("GetTokenGUID:", guid)
+
 	httpClient := http.Client{}
 	req, err := http.NewRequest(http.MethodPost, eo.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -72,6 +75,8 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("GetTokenGUID:", guid)
+		fmt.Println(eo.Token.AccessToken)
 		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
 	}
 
@@ -99,6 +104,7 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 	}
 
 	fmt.Println("new token:")
+	fmt.Println("GetTokenGUID:", guid)
 	fmt.Println(eo.Token.AccessToken)
 
 	return nil
