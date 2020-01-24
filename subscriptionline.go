@@ -1,6 +1,7 @@
 package exactonline
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -13,6 +14,7 @@ type SubscriptionLine struct {
 	EntryID  types.GUID `json:"EntryID"`
 	Item     types.GUID `json:"Item"`
 	FromDate types.Date `json:"FromDate"`
+	ToDate   types.Date `json:"ToDate"`
 	UnitCode string     `json:"UnitCode"`
 }
 
@@ -20,6 +22,14 @@ type SubscriptionLineInsert struct {
 	EntryID  types.GUID `json:"-"`
 	Item     types.GUID `json:"Item"`
 	FromDate types.Date `json:"FromDate"`
+	ToDate   types.Date `json:"ToDate"`
+	UnitCode string     `json:"UnitCode"`
+}
+
+type SubscriptionLineUpdate struct {
+	Item     types.GUID `json:"Item"`
+	FromDate types.Date `json:"FromDate"`
+	ToDate   types.Date `json:"ToDate"`
 	UnitCode string     `json:"UnitCode"`
 }
 
@@ -71,5 +81,40 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 	subscription.SubscriptionLines = *sub
 
 	//fmt.Println("GetSubscriptionLinesBySubscription:", len(subscription.SubscriptionLines))
+	return nil
+}
+
+// UpdateSubscription updates Subscription in ExactOnline
+//
+func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+
+	/*sd := new(types.Date)
+	if !s.StartDate.IsZero() {
+		sd = &s.StartDate
+	}
+	ed := new(types.Date)
+	if !s.EndDate.IsZero() {
+		ed = &s.EndDate
+	}*/
+	slu := SubscriptionLineUpdate{
+		s.Item,
+		s.FromDate,
+		s.ToDate,
+		s.UnitCode,
+	}
+
+	b, err := json.Marshal(slu)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("\nUPDATED SubscriptionLine", urlStr, slu)
+
+	err = eo.PutBytes(urlStr, b)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

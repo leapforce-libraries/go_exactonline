@@ -229,6 +229,8 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 
 	he := HasEntryID{}
 
+	fmt.Println(s)
+
 	fmt.Println("\nINSERTED Subscription", urlStr, s)
 
 	err = eo.PostBytes(urlStr, b, &he)
