@@ -3,7 +3,8 @@ package exactonline
 import (
 	"fmt"
 	"strconv"
-	types "types"
+
+	types "github.com/leapforce-nl/go_types"
 )
 
 type Item struct {

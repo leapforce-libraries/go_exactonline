@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	types "types"
+	types "github.com/leapforce-nl/go_types"
 )
 
 type Token struct {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	types "types"
+	types "github.com/leapforce-nl/go_types"
 )
 
 // Subscription stores Subscription from exactonline

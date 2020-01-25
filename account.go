@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	types "types"
+	types "github.com/leapforce-nl/go_types"
 )
 
 // Account stores account from exactonline

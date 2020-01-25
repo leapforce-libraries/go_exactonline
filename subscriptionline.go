@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	types "types"
+	types "github.com/leapforce-nl/go_types"
 )
 
 // SubscriptionLine stores SubscriptionLine from exactonline
