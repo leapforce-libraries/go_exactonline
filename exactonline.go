@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	bigquerytools "github.com/leapforce-nl/go_bigquerytools"
-	types "github.com/leapforce-nl/go_types"
+	bigquerytools "github.com/Leapforce-nl/go_bigquerytools"
+	types "github.com/Leapforce-nl/go_types"
 )
 
 // ExactOnline stores exactonline configuration
