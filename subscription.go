@@ -26,6 +26,26 @@ type Subscription struct {
 	SubscriptionLines              []SubscriptionLine
 }
 
+type SubscriptionUpdate struct {
+	SubscriptionType types.GUID `json:"SubscriptionType"`
+	OrderedBy        types.GUID `json:"OrderedBy"`
+	InvoiceTo        types.GUID `json:"InvoiceTo"`
+	StartDate        types.Date `json:"StartDate"`
+	EndDate          types.Date `json:"EndDate"`
+	Description      string     `json:"Description"`
+}
+
+type SubscriptionInsert struct {
+	EntryID           types.GUID               `json:"-"`
+	SubscriptionType  types.GUID               `json:"SubscriptionType"`
+	OrderedBy         types.GUID               `json:"OrderedBy"`
+	InvoiceTo         types.GUID               `json:"InvoiceTo"`
+	StartDate         types.Date               `json:"StartDate"`
+	EndDate           types.Date               `json:"EndDate"`
+	Description       string                   `json:"Description"`
+	SubscriptionLines []SubscriptionLineInsert `json:"SubscriptionLines"`
+}
+
 // SubscriptionBq equals type Subscription except fields of type Date that are converted to type Time, to be insertable in BigQuery
 //
 type SubscriptionBq struct {
@@ -138,26 +158,6 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 	return nil
 }
 
-type SubscriptionUpdate struct {
-	SubscriptionType types.GUID `json:"SubscriptionType"`
-	OrderedBy        types.GUID `json:"OrderedBy"`
-	InvoiceTo        types.GUID `json:"InvoiceTo"`
-	StartDate        types.Date `json:"StartDate"`
-	EndDate          types.Date `json:"EndDate"`
-	Description      string     `json:"Description"`
-}
-
-type SubscriptionInsert struct {
-	EntryID           types.GUID               `json:"-"`
-	SubscriptionType  types.GUID               `json:"SubscriptionType"`
-	OrderedBy         types.GUID               `json:"OrderedBy"`
-	InvoiceTo         types.GUID               `json:"InvoiceTo"`
-	StartDate         types.Date               `json:"StartDate"`
-	EndDate           types.Date               `json:"EndDate"`
-	Description       string                   `json:"Description"`
-	SubscriptionLines []SubscriptionLineInsert `json:"SubscriptionLines"`
-}
-
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
@@ -240,6 +240,21 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 
 	fmt.Println("\nNEW Subscription", he.EntryID)
 	s.EntryID = he.EntryID
+
+	return nil
+}
+
+// DeleteSubscription deletes Subscription in ExactOnline
+//
+func (eo *ExactOnline) DeleteSubscription(s *Subscription) error {
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+
+	fmt.Println("\nDELETED Subscription", urlStr, s.EntryID)
+
+	err := eo.Delete(urlStr)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

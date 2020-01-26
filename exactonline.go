@@ -389,3 +389,40 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 
 	return nil
 }
+
+func (eo *ExactOnline) Delete(url string) error {
+	client, errClient := eo.GetHttpClient()
+	if errClient != nil {
+		return errClient
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		fmt.Println("errNewRequest")
+		return err
+	}
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send out the HTTP request
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println("errDo")
+		return err
+	}
+
+	eo.ReadRateLimitHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println(eo.Token.AccessToken)
+		return eo.PrintError(res)
+	}
+
+	defer res.Body.Close()
+
+	return nil
+}
