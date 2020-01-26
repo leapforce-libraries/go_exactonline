@@ -95,12 +95,14 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	data["Title"] = c.Title
 	data["Email"] = c.Email
 
-	fmt.Println("\nUPDATED Contact", urlStr, c.Email)
-
 	err := eo.Put(urlStr, data)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("\nUPDATED Contact")
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", data)
 
 	//time.Sleep(1 * time.Second)
 
@@ -121,15 +123,17 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 
 	co := Contact{}
 
-	fmt.Println("\nINSERTED Contact", urlStr, c.ID, c.Account.String(), c.Email)
-
 	err := eo.Post(urlStr, data, &co)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("ERROR in InsertContact:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", data)
 		return err
 	}
 
-	fmt.Println("\nNEW Contact", co.ID)
+	fmt.Println("\nINSERTED Contact", co.ID)
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", data)
 	c.ID = co.ID
 
 	return nil

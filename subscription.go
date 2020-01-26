@@ -36,14 +36,14 @@ type SubscriptionUpdate struct {
 }
 
 type SubscriptionInsert struct {
-	EntryID           types.GUID               `json:"-"`
-	SubscriptionType  types.GUID               `json:"SubscriptionType"`
-	OrderedBy         types.GUID               `json:"OrderedBy"`
-	InvoiceTo         types.GUID               `json:"InvoiceTo"`
-	StartDate         types.Date               `json:"StartDate"`
-	EndDate           types.Date               `json:"EndDate"`
-	Description       string                   `json:"Description"`
-	SubscriptionLines []SubscriptionLineInsert `json:"SubscriptionLines"`
+	EntryID           types.GUID                               `json:"-"`
+	SubscriptionType  types.GUID                               `json:"SubscriptionType"`
+	OrderedBy         types.GUID                               `json:"OrderedBy"`
+	InvoiceTo         types.GUID                               `json:"InvoiceTo"`
+	StartDate         types.Date                               `json:"StartDate"`
+	EndDate           types.Date                               `json:"EndDate"`
+	Description       string                                   `json:"Description"`
+	SubscriptionLines []SubscriptionLineInsertWithSubscription `json:"SubscriptionLines"`
 }
 
 // SubscriptionBq equals type Subscription except fields of type Date that are converted to type Time, to be insertable in BigQuery
@@ -112,6 +112,8 @@ func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription,
 
 		str, err := eo.Get(urlStr, &sc)
 		if err != nil {
+			fmt.Println("ERROR in GetSubscriptionsInternal:", err)
+			fmt.Println("url:", urlStr)
 			return nil, err
 		}
 
@@ -182,15 +184,19 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 
 	b, err := json.Marshal(su)
 	if err != nil {
+		fmt.Println("ERROR in UpdateSubscription:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", su)
 		return err
 	}
-
-	fmt.Println("\nUPDATED Subscription", urlStr, su)
-
 	err = eo.PutBytes(urlStr, b)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("\nUPDATED Subscription")
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", su)
 
 	return nil
 }
@@ -229,16 +235,17 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 
 	he := HasEntryID{}
 
-	fmt.Println(s)
-
-	fmt.Println("\nINSERTED Subscription", urlStr, s)
-
 	err = eo.PostBytes(urlStr, b, &he)
 	if err != nil {
+		fmt.Println("ERROR in InsertSubscription:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", s)
 		return err
 	}
 
-	fmt.Println("\nNEW Subscription", he.EntryID)
+	fmt.Println("\nINSERTED Subscription", he.EntryID)
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", s)
 	s.EntryID = he.EntryID
 
 	return nil
@@ -249,12 +256,14 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 func (eo *ExactOnline) DeleteSubscription(s *Subscription) error {
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
 
-	fmt.Println("\nDELETED Subscription", urlStr, s.EntryID)
-
 	err := eo.Delete(urlStr)
 	if err != nil {
+		fmt.Println("ERROR in DeleteSubscription:", err)
+		fmt.Println("url:", urlStr)
 		return err
 	}
+
+	fmt.Println("\nDELETED Subscription", urlStr)
 
 	return nil
 }

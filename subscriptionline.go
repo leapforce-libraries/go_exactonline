@@ -29,8 +29,16 @@ type SubscriptionLineInsert struct {
 	UnitCode string     `json:"UnitCode"`
 }
 
+type SubscriptionLineInsertWithSubscription struct {
+	ID       types.GUID `json:"-"`
+	Item     types.GUID `json:"Item"`
+	FromDate types.Date `json:"FromDate"`
+	ToDate   types.Date `json:"ToDate"`
+	UnitCode string     `json:"UnitCode"`
+}
+
 type SubscriptionLineUpdate struct {
-	ID       types.GUID `json:"ID"`
+	ID       types.GUID `json:"-"`
 	Item     types.GUID `json:"Item"`
 	FromDate types.Date `json:"FromDate"`
 	ToDate   types.Date `json:"ToDate"`
@@ -52,6 +60,8 @@ func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]Subscript
 
 		str, err := eo.Get(urlStr, &sl)
 		if err != nil {
+			fmt.Println("ERROR in GetSubscriptionLinesInternal:", err)
+			fmt.Println("url:", urlStr)
 			return nil, err
 		}
 
@@ -91,7 +101,7 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.ID.String())
 
 	/*sd := new(types.Date)
 	if !s.StartDate.IsZero() {
@@ -111,15 +121,20 @@ func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
 
 	b, err := json.Marshal(slu)
 	if err != nil {
+		fmt.Println("ERROR in UpdateSubscriptionLine:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", slu)
 		return err
 	}
-
-	fmt.Println("\nUPDATED SubscriptionLine", urlStr, slu)
 
 	err = eo.PutBytes(urlStr, b)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("\nUPDATED SubscriptionLine")
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", slu)
 
 	return nil
 }
@@ -142,14 +157,17 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error 
 
 	//fmt.Println(sl)
 
-	fmt.Println("\nINSERTED SubscriptionLine", urlStr, sl)
-
 	err = eo.PostBytes(urlStr, b, &he)
 	if err != nil {
+		fmt.Println("ERROR in InsertSubscriptionLine:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", sl)
 		return err
 	}
 
-	fmt.Println("\nNEW SubscriptionLine", he.ID)
+	fmt.Println("\nINSERTED SubscriptionLine", he.ID)
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", sl)
 	sl.ID = he.ID
 
 	return nil
@@ -164,8 +182,13 @@ func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
 
 	err := eo.Delete(urlStr)
 	if err != nil {
+		fmt.Println("ERROR in DeleteSubscriptionLine:", err)
+		fmt.Println("url:", urlStr)
 		return err
 	}
+
+	fmt.Println("\nDELETED SubscriptionLine")
+	fmt.Println("url:", urlStr)
 
 	return nil
 }

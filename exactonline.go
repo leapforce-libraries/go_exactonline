@@ -12,7 +12,6 @@ import (
 	"time"
 
 	bigquerytools "github.com/leapforce-nl/go_bigquerytools"
-	errortools "github.com/leapforce-nl/go_errortools"
 	types "github.com/leapforce-nl/go_types"
 )
 
@@ -233,6 +232,9 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Get")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return "", eo.PrintError(res)
 	}
@@ -271,7 +273,7 @@ func (eo *ExactOnline) PrintError(res *http.Response) error {
 	fmt.Println("Status", res.Status)
 
 	b, err := ioutil.ReadAll(res.Body)
-	errortools.Fatal(err)
+	return err
 
 	ee := ExactOnlineError{}
 
@@ -312,10 +314,11 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Put")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
-		//eo.PrintError(res)
-		//return &types.ErrorString{fmt.Sprintf("StatusCode %s", res.StatusCode)}
 	}
 
 	//fmt.Println(res)
@@ -362,6 +365,9 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Post")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
 	}
@@ -375,25 +381,25 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 
 	response := ResponseSingle{}
 
-	errr := json.Unmarshal(b, &response)
-	if errr != nil {
+	err = json.Unmarshal(b, &response)
+	if err != nil {
 		fmt.Println("errUnmarshal1")
-		return err
+		return eo.PrintError(res)
 	}
 
-	errrr := json.Unmarshal(response.Data, &model)
-	if errrr != nil {
+	err = json.Unmarshal(response.Data, &model)
+	if err != nil {
 		fmt.Println("errUnmarshal2")
-		return errrr
+		return err
 	}
 
 	return nil
 }
 
 func (eo *ExactOnline) Delete(url string) error {
-	client, errClient := eo.GetHttpClient()
-	if errClient != nil {
-		return errClient
+	client, err := eo.GetHttpClient()
+	if err != nil {
+		return err
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
@@ -418,8 +424,11 @@ func (eo *ExactOnline) Delete(url string) error {
 
 	// Check HTTP StatusCode
 	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Delete")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
-		return eo.PrintError(res)
+		return err
 	}
 
 	defer res.Body.Close()

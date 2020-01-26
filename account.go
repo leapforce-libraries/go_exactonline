@@ -86,6 +86,8 @@ func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {
 
 		str, err := eo.Get(urlStr, &ac)
 		if err != nil {
+			fmt.Println("ERROR in GetAccountsInternal:", err)
+			fmt.Println("url:", urlStr)
 			return nil, err
 		}
 
@@ -136,14 +138,17 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	fmt.Println("\nUPDATED Account", urlStr, a.Country, a.Name)
-
 	err := eo.Put(urlStr, data)
 	if err != nil {
+		fmt.Println("ERROR in UpdateAccount:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", data)
 		return err
 	}
 
-	//time.Sleep(1 * time.Second)
+	fmt.Println("\nUPDATED Account")
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", data)
 
 	return nil
 }
@@ -156,8 +161,15 @@ func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
 
 	err := eo.Put(urlStr, data)
 	if err != nil {
+		fmt.Println("ERROR in UpdateAccountMainContact:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", data)
 		return err
 	}
+
+	fmt.Println("\nUPDATED Account (MainContact)")
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", data)
 
 	return nil
 }
@@ -179,15 +191,18 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	//fmt.Println(urlStr)
 	ac := Account{}
 
-	fmt.Println("\nINSERTED Account", urlStr, a.Country, a.Name)
-
 	err := eo.Post(urlStr, data, &ac)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("ERROR in InsertAccount:", err)
+		fmt.Println("url:", urlStr)
+		fmt.Println("data:", data)
 		return err
 	}
 
-	fmt.Println("\nNEW Account", ac.ID)
+	fmt.Println("\nINSERTED Account", ac.ID)
+	fmt.Println("url:", urlStr)
+	fmt.Println("data:", data)
+
 	a.ID = ac.ID
 
 	//fmt.Println("Inserted:", a.ID.String())

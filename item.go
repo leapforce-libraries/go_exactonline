@@ -22,6 +22,8 @@ func (eo *ExactOnline) GetItems() error {
 
 		str, err := eo.Get(urlStr, &it)
 		if err != nil {
+			fmt.Println("ERROR in GetItems:", err)
+			fmt.Println("url:", urlStr)
 			return err
 		}
 
