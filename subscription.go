@@ -12,89 +12,72 @@ import (
 // Subscription stores Subscription from exactonline
 //
 type Subscription struct {
-	EntryID                        types.GUID `json:"EntryID"`
-	Description                    string     `json:"Description"`
-	Division                       int        `json:"Division"`
-	InvoiceTo                      types.GUID `json:"InvoiceTo"`
-	InvoiceToContactPersonFullName string     `json:"InvoiceToContactPersonFullName"`
-	InvoiceToName                  string     `json:"InvoiceToName"`
-	OrderedBy                      types.GUID `json:"OrderedBy"`
-	SubscriptionType               types.GUID `json:"SubscriptionType"`
-	SubscriptionTypeCode           string     `json:"SubscriptionTypeCode"`
-	StartDate                      types.Date `json:"StartDate,omitempty"`
-	EndDate                        types.Date `json:"EndDate,omitempty"`
+	EntryID                        types.GUID  `json:"EntryID"`
+	Description                    string      `json:"Description"`
+	Division                       int         `json:"Division"`
+	InvoiceTo                      types.GUID  `json:"InvoiceTo"`
+	InvoiceToContactPersonFullName string      `json:"InvoiceToContactPersonFullName"`
+	InvoiceToName                  string      `json:"InvoiceToName"`
+	OrderedBy                      types.GUID  `json:"OrderedBy"`
+	SubscriptionType               types.GUID  `json:"SubscriptionType"`
+	SubscriptionTypeCode           string      `json:"SubscriptionTypeCode"`
+	StartDate                      *types.Date `json:"StartDate,omitempty"`
+	EndDate                        *types.Date `json:"EndDate,omitempty"`
 	SubscriptionLines              []SubscriptionLine
 }
 
 type SubscriptionUpdate struct {
-	SubscriptionType types.GUID `json:"SubscriptionType"`
-	OrderedBy        types.GUID `json:"OrderedBy"`
-	InvoiceTo        types.GUID `json:"InvoiceTo"`
-	StartDate        types.Date `json:"StartDate"`
-	EndDate          types.Date `json:"EndDate"`
-	Description      string     `json:"Description"`
+	SubscriptionType types.GUID  `json:"SubscriptionType"`
+	OrderedBy        types.GUID  `json:"OrderedBy"`
+	InvoiceTo        types.GUID  `json:"InvoiceTo"`
+	StartDate        *types.Date `json:"StartDate"`
+	CancellationDate *types.Date `json:"CancellationDate"`
+	//EndDate          types.Date `json:"EndDate"`
+	Description string `json:"Description"`
 }
 
 type SubscriptionInsert struct {
-	EntryID           types.GUID                               `json:"-"`
-	SubscriptionType  types.GUID                               `json:"SubscriptionType"`
-	OrderedBy         types.GUID                               `json:"OrderedBy"`
-	InvoiceTo         types.GUID                               `json:"InvoiceTo"`
-	StartDate         types.Date                               `json:"StartDate"`
-	EndDate           types.Date                               `json:"EndDate"`
+	EntryID          types.GUID  `json:"-"`
+	SubscriptionType types.GUID  `json:"SubscriptionType"`
+	OrderedBy        types.GUID  `json:"OrderedBy"`
+	InvoiceTo        types.GUID  `json:"InvoiceTo"`
+	StartDate        *types.Date `json:"StartDate"`
+	CancellationDate *types.Date `json:"CancellationDate"`
+	//EndDate           types.Date                               `json:"EndDate"`
 	Description       string                                   `json:"Description"`
 	SubscriptionLines []SubscriptionLineInsertWithSubscription `json:"SubscriptionLines"`
 }
 
-// SubscriptionBq equals type Subscription except fields of type Date that are converted to type Time, to be insertable in BigQuery
-//
-type SubscriptionBq struct {
-	EntryID                        string
-	Description                    string
-	Division                       int
-	InvoiceTo                      string
-	InvoiceToContactPersonFullName string
-	InvoiceToName                  string
-	OrderedBy                      string
-	SubscriptionTypeCode           string
-	StartDate                      time.Time
-	EndDate                        time.Time
-}
-
-// ToBq convert Subscription to SubscriptionBq
-//
-func (s *Subscription) ToBq() *SubscriptionBq {
-	return &SubscriptionBq{
-		s.EntryID.String(),
-		s.Description,
-		s.Division,
-		s.InvoiceTo.String(),
-		s.InvoiceToContactPersonFullName,
-		s.InvoiceToName,
-		s.OrderedBy.String(),
-		s.SubscriptionTypeCode,
-		s.StartDate.Time,
-		s.EndDate.Time,
-		//s.SubscriptionLines,
-	}
-}
-
-// ToBq convert Subscription to SubscriptionBq
+// IsValid returns whether or not a Subscription is valid at a certain time.Time
 //
 func (s *Subscription) IsValid(timestamp time.Time) bool {
-	if s.StartDate != *new(types.Date) {
+	if s.StartDate != new(types.Date) {
 		if s.StartDate.After(timestamp) {
 			return false
 		}
 	}
 
-	if s.EndDate != *new(types.Date) {
+	if s.EndDate != new(types.Date) {
 		if s.EndDate.Before(timestamp) {
 			return false
 		}
 	}
 
 	return true
+}
+
+func (eo *ExactOnline) CancellationDate(endDate *types.Date) *types.Date {
+	cancellationDate := endDate
+	if cancellationDate != nil {
+		if int(cancellationDate.Month()) == 12 && cancellationDate.Day() == 31 {
+			// in order to set EndDate at 31/12/year we need to set the CancellationDate
+			// to 30/11/year (or earlier)......
+			cd, _ := time.Parse("2006-01-02", strconv.Itoa(cancellationDate.Time.Year())+"-11-30")
+			cancellationDate = &types.Date{cd}
+		}
+	}
+
+	return cancellationDate
 }
 
 func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription, error) {
@@ -165,20 +148,12 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
 
-	/*sd := new(types.Date)
-	if !s.StartDate.IsZero() {
-		sd = &s.StartDate
-	}
-	ed := new(types.Date)
-	if !s.EndDate.IsZero() {
-		ed = &s.EndDate
-	}*/
 	su := SubscriptionUpdate{
 		s.SubscriptionType,
 		s.OrderedBy,
 		s.InvoiceTo,
 		s.StartDate,
-		s.EndDate,
+		eo.CancellationDate(s.EndDate),
 		s.Description,
 	}
 
@@ -205,24 +180,6 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 //
 func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
-
-	/*sd := new(types.Date)
-	if !s.StartDate.IsZero() {
-		sd = &s.StartDate
-	}
-	ed := new(types.Date)
-	if !s.EndDate.IsZero() {
-		ed = &s.EndDate
-	}*/
-	/*si := SubscriptionInsert{
-		s.SubscriptionType,
-		s.OrderedBy,
-		s.InvoiceTo,
-		s.StartDate,
-		s.EndDate,
-		s.Description,
-		s.SubscriptionLines,
-	}*/
 
 	b, err := json.Marshal(s)
 	if err != nil {

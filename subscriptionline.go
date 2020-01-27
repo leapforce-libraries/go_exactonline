@@ -12,37 +12,37 @@ import (
 // SubscriptionLine stores SubscriptionLine from exactonline
 //
 type SubscriptionLine struct {
-	ID       types.GUID `json:"ID"`
-	EntryID  types.GUID `json:"EntryID"`
-	Item     types.GUID `json:"Item"`
-	FromDate types.Date `json:"FromDate"`
-	ToDate   types.Date `json:"ToDate"`
-	UnitCode string     `json:"UnitCode"`
+	ID       types.GUID  `json:"ID"`
+	EntryID  types.GUID  `json:"EntryID"`
+	Item     types.GUID  `json:"Item"`
+	FromDate *types.Date `json:"FromDate"`
+	ToDate   *types.Date `json:"ToDate"`
+	UnitCode string      `json:"UnitCode"`
 }
 
 type SubscriptionLineInsert struct {
-	ID       types.GUID `json:"-"`
-	EntryID  types.GUID `json:"EntryID"`
-	Item     types.GUID `json:"Item"`
-	FromDate types.Date `json:"FromDate"`
-	ToDate   types.Date `json:"ToDate"`
-	UnitCode string     `json:"UnitCode"`
+	ID       types.GUID  `json:"-"`
+	EntryID  types.GUID  `json:"EntryID"`
+	Item     types.GUID  `json:"Item"`
+	FromDate *types.Date `json:"FromDate"`
+	ToDate   *types.Date `json:"ToDate"`
+	UnitCode string      `json:"UnitCode"`
 }
 
 type SubscriptionLineInsertWithSubscription struct {
-	ID       types.GUID `json:"-"`
-	Item     types.GUID `json:"Item"`
-	FromDate types.Date `json:"FromDate"`
-	ToDate   types.Date `json:"ToDate"`
-	UnitCode string     `json:"UnitCode"`
+	ID       types.GUID  `json:"-"`
+	Item     types.GUID  `json:"Item"`
+	FromDate *types.Date `json:"FromDate"`
+	ToDate   *types.Date `json:"ToDate"`
+	UnitCode string      `json:"UnitCode"`
 }
 
 type SubscriptionLineUpdate struct {
-	ID       types.GUID `json:"-"`
-	Item     types.GUID `json:"Item"`
-	FromDate types.Date `json:"FromDate"`
-	ToDate   types.Date `json:"ToDate"`
-	UnitCode string     `json:"UnitCode"`
+	ID       types.GUID  `json:"-"`
+	Item     types.GUID  `json:"Item"`
+	FromDate *types.Date `json:"FromDate"`
+	ToDate   *types.Date `json:"ToDate"`
+	UnitCode string      `json:"UnitCode"`
 }
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
@@ -194,17 +194,25 @@ func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
 }
 
 func (s *SubscriptionLine) FromDateTime() time.Time {
-	if (s.FromDate.Time == time.Time{}) {
-		t, _ := time.Parse("2006-01-02", "1800-01-01")
-		return t
+
+	if s.FromDate != nil {
+		if (s.FromDate.Time != time.Time{}) {
+			return s.FromDate.Time
+		}
 	}
-	return s.FromDate.Time
+
+	t, _ := time.Parse("2006-01-02", "1800-01-01")
+	return t
 }
 
 func (s *SubscriptionLine) ToDateTime() time.Time {
-	if (s.ToDate.Time == time.Time{}) {
-		t, _ := time.Parse("2006-01-02", "2099-12-31")
-		return t
+
+	if s.ToDate != nil {
+		if (s.ToDate.Time != time.Time{}) {
+			return s.ToDate.Time
+		}
 	}
-	return s.ToDate.Time
+
+	t, _ := time.Parse("2006-01-02", "2099-12-31")
+	return t
 }
