@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getsentry/sentry-go"
+
 	bigquerytools "github.com/Leapforce-nl/go_bigquerytools"
 	types "github.com/Leapforce-nl/go_types"
 )
@@ -273,19 +275,23 @@ func (eo *ExactOnline) PrintError(res *http.Response) error {
 	fmt.Println("Status", res.Status)
 
 	b, err := ioutil.ReadAll(res.Body)
-	return err
+	if err != nil {
+		fmt.Println("errUnmarshal1")
+		return err
+	}
 
 	ee := ExactOnlineError{}
 
 	err = json.Unmarshal(b, &ee)
 	if err != nil {
 		fmt.Println("errUnmarshal1")
-		//errortools.Fatal(err)
+		return err
 	}
 
-	fmt.Println(ee.Err.Message.Value)
-
-	return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
+	//fmt.Println(ee.Err.Message.Value)
+	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
+	sentry.CaptureMessage(message)
+	return &types.ErrorString{message}
 }
 
 func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
