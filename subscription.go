@@ -12,24 +12,36 @@ import (
 // Subscription stores Subscription from exactonline
 //
 type Subscription struct {
-	EntryID                        types.GUID  `json:"EntryID"`
-	Description                    string      `json:"Description"`
-	Division                       int         `json:"Division"`
-	InvoiceTo                      types.GUID  `json:"InvoiceTo"`
-	InvoiceToContactPersonFullName string      `json:"InvoiceToContactPersonFullName"`
-	InvoiceToName                  string      `json:"InvoiceToName"`
-	OrderedBy                      types.GUID  `json:"OrderedBy"`
-	SubscriptionType               types.GUID  `json:"SubscriptionType"`
-	SubscriptionTypeCode           string      `json:"SubscriptionTypeCode"`
-	StartDate                      *types.Date `json:"StartDate,omitempty"`
-	EndDate                        *types.Date `json:"EndDate,omitempty"`
-	SubscriptionLines              []SubscriptionLine
+	EntryID     types.GUID `json:"EntryID"`
+	Description string     `json:"Description"`
+	Division    int        `json:"Division"`
+	//InvoiceTo                      types.GUID  `json:"InvoiceTo"`
+	//InvoiceToContactPersonFullName string      `json:"InvoiceToContactPersonFullName"`
+	//InvoiceToName                  string      `json:"InvoiceToName"`
+	OrderedBy            types.GUID  `json:"OrderedBy"`
+	SubscriptionType     types.GUID  `json:"SubscriptionType"`
+	SubscriptionTypeCode string      `json:"SubscriptionTypeCode"`
+	StartDate            *types.Date `json:"StartDate,omitempty"`
+	EndDate              *types.Date `json:"EndDate,omitempty"`
+	CancellationDate     *types.Date `json:"CancellationDate,omitempty"`
+	SubscriptionLines    []SubscriptionLine
+}
+
+type SubscriptionBigQuery struct {
+	EntryID              string
+	Description          string
+	OrderedBy            string
+	SubscriptionType     string
+	SubscriptionTypeCode string
+	StartDate            string
+	EndDate              string
+	CancellationDate     string
 }
 
 type SubscriptionUpdate struct {
-	SubscriptionType types.GUID  `json:"SubscriptionType"`
-	OrderedBy        types.GUID  `json:"OrderedBy"`
-	InvoiceTo        types.GUID  `json:"InvoiceTo"`
+	SubscriptionType types.GUID `json:"SubscriptionType"`
+	OrderedBy        types.GUID `json:"OrderedBy"`
+	//InvoiceTo        types.GUID  `json:"InvoiceTo"`
 	StartDate        *types.Date `json:"StartDate"`
 	CancellationDate *types.Date `json:"CancellationDate"`
 	//EndDate          types.Date `json:"EndDate"`
@@ -37,10 +49,10 @@ type SubscriptionUpdate struct {
 }
 
 type SubscriptionInsert struct {
-	EntryID          types.GUID  `json:"-"`
-	SubscriptionType types.GUID  `json:"SubscriptionType"`
-	OrderedBy        types.GUID  `json:"OrderedBy"`
-	InvoiceTo        types.GUID  `json:"InvoiceTo"`
+	EntryID          types.GUID `json:"-"`
+	SubscriptionType types.GUID `json:"SubscriptionType"`
+	OrderedBy        types.GUID `json:"OrderedBy"`
+	//InvoiceTo        types.GUID  `json:"InvoiceTo"`
 	StartDate        *types.Date `json:"StartDate"`
 	CancellationDate *types.Date `json:"CancellationDate"`
 	//EndDate           types.Date                               `json:"EndDate"`
@@ -64,6 +76,33 @@ func (s *Subscription) IsValid(timestamp time.Time) bool {
 	}
 
 	return true
+}
+
+func (s *Subscription) ToBigQuery() *SubscriptionBigQuery {
+	startDate := ""
+	endDate := ""
+	cancellationDate := ""
+
+	if s.StartDate != nil {
+		startDate = s.StartDate.Time.Format("2006-01-02")
+	}
+	if s.EndDate != nil {
+		endDate = s.EndDate.Time.Format("2006-01-02")
+	}
+	if s.CancellationDate != nil {
+		cancellationDate = s.CancellationDate.Time.Format("2006-01-02")
+	}
+
+	return &SubscriptionBigQuery{
+		s.EntryID.String(),
+		s.Description,
+		s.OrderedBy.String(),
+		s.SubscriptionType.String(),
+		s.SubscriptionTypeCode,
+		startDate,
+		endDate,
+		cancellationDate,
+	}
 }
 
 func (eo *ExactOnline) CancellationDate(endDate *types.Date) *types.Date {
@@ -151,7 +190,7 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 	su := SubscriptionUpdate{
 		s.SubscriptionType,
 		s.OrderedBy,
-		s.InvoiceTo,
+		//s.InvoiceTo,
 		s.StartDate,
 		eo.CancellationDate(s.EndDate),
 		s.Description,

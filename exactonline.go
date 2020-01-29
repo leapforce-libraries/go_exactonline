@@ -178,24 +178,9 @@ func (eo *ExactOnline) GetHttpClient() (*http.Client, error) {
 	return new(http.Client), nil
 }
 
-func (eo *ExactOnline) GetMe() error {
-	urlStr := "https://start.exactonline.nl/api/v1/current/Me"
-
-	me := []Me{}
-
-	_, err := eo.Get(urlStr, &me)
-	if err != nil {
-		return err
-	}
-
-	eo.Me = me[0]
-
-	return nil
-}
-
-//
 // generic methods
 //
+
 func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	//fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
 	//fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))

@@ -24,9 +24,9 @@ type Account struct {
 	Subscriptions          []Subscription
 }
 
-// AccountBq stores account from exactonline
+// AccountBigQuery stores account from exactonline
 //
-type AccountBq struct {
+type AccountBigQuery struct {
 	ID                     string
 	Name                   string
 	ChamberOfCommerce      string
@@ -40,10 +40,10 @@ type AccountBq struct {
 	MainContact            string
 }
 
-// ToBq convert Subscription to SubscriptionBq
+// ToBigQuery convert Subscription to SubscriptionBq
 //
-func (a *Account) ToBq() *AccountBq {
-	return &AccountBq{
+func (a *Account) ToBigQuery() *AccountBigQuery {
+	return &AccountBigQuery{
 		a.ID.String(),
 		a.Name,
 		a.ChamberOfCommerce,
