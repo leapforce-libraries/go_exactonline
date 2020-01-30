@@ -35,7 +35,7 @@ func (c *Contact) Values() string {
 
 func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {
 	selectFields := GetJsonTaggedFieldNames(Contact{})
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	urlStr := fmt.Sprintf("%s%s/crm/Contacts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -85,7 +85,7 @@ func (eo *ExactOnline) GetContactsByEmail(email string) ([]Contact, error) {
 }
 
 func (eo *ExactOnline) UpdateContact(c *Contact) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), c.ID.String())
+	urlStr := fmt.Sprintf("%s%s/crm/Contacts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), c.ID.String())
 
 	data := make(map[string]string)
 	data["Initials"] = c.Initials
@@ -110,7 +110,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 }
 
 func (eo *ExactOnline) InsertContact(c *Contact) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	urlStr := fmt.Sprintf("%s%s/crm/Contacts", eo.ApiUrl, strconv.Itoa(eo.Division))
 
 	data := make(map[string]string)
 	data["Account"] = c.Account.String()

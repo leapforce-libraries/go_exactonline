@@ -14,7 +14,7 @@ type Item struct {
 
 func (eo *ExactOnline) GetItems() error {
 	selectFields := GetJsonTaggedFieldNames(Item{})
-	urlStr := fmt.Sprintf("%s%s/logistics/Items?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	urlStr := fmt.Sprintf("%s%s/logistics/Items?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	//fmt.Println(urlStr)
 
 	for urlStr != "" {

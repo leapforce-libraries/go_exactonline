@@ -16,7 +16,7 @@ type SubscriptionType struct {
 
 func (eo *ExactOnline) GetSubscriptionTypes() error {
 	selectFields := GetJsonTaggedFieldNames(SubscriptionType{})
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionTypes?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionTypes?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	//fmt.Println(urlStr)
 
 	eo.SubscriptionTypes = []SubscriptionType{}

@@ -47,7 +47,7 @@ type SubscriptionLineUpdate struct {
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
 	selectFields := GetJsonTaggedFieldNames(SubscriptionLine{})
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -101,7 +101,7 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.ID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.ID.String())
 
 	/*sd := new(types.Date)
 	if !s.StartDate.IsZero() {
@@ -142,7 +142,7 @@ func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
 // InsertSubscriptionLine inserts Subscription in ExactOnline
 //
 func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines", eo.ApiUrl, strconv.Itoa(eo.Division))
 
 	b, err := json.Marshal(sl)
 	if err != nil {
@@ -176,7 +176,7 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error 
 // DeleteSubscription deletes Subscription in ExactOnline
 //
 func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), sl.EntryID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), sl.EntryID.String())
 
 	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.EntryID)
 

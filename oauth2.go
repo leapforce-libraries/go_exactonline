@@ -163,8 +163,6 @@ func (eo *ExactOnline) ValidateToken() error {
 		}
 	}
 
-	//fmt.Println("[try]", time.Now(), eo.Token.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token.AccessToken[0:20], "[rt]", eo.Token.RefreshToken[0:20])
-
 	isExpired, err := eo.Token.IsExpired()
 	if err != nil {
 		return err
@@ -176,8 +174,6 @@ func (eo *ExactOnline) ValidateToken() error {
 			return err
 		}
 	}
-
-	//fmt.Println("[done]", time.Now(), eo.Token.Expiry, "[me]", eo.Me.CurrentDivision, "[at]", eo.Token.AccessToken[0:20], "[rt]", eo.Token.RefreshToken[0:20])
 
 	return nil
 }

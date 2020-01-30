@@ -17,7 +17,7 @@ func (eo *ExactOnline) GetMe() error {
 		return err
 	}
 
-	eo.Me = me[0]
+	//eo.Me = me[0]
 
 	return nil
 }

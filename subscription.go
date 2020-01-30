@@ -121,7 +121,7 @@ func (eo *ExactOnline) CancellationDate(endDate *types.Date) *types.Date {
 
 func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription, error) {
 	selectFields := GetJsonTaggedFieldNames(Subscription{})
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), selectFields)
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -185,7 +185,7 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
 
 	su := SubscriptionUpdate{
 		s.SubscriptionType,
@@ -218,7 +218,7 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 // InsertSubscription inserts Subscription in ExactOnline
 //
 func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Division))
 
 	b, err := json.Marshal(s)
 	if err != nil {
@@ -250,7 +250,7 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 // DeleteSubscription deletes Subscription in ExactOnline
 //
 func (eo *ExactOnline) DeleteSubscription(s *Subscription) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision), s.EntryID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
 
 	err := eo.Delete(urlStr)
 	if err != nil {

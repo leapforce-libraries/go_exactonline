@@ -12,7 +12,7 @@ type Division struct {
 }
 
 func (eo *ExactOnline) GetDivisions() error {
-	urlStr := fmt.Sprintf("%s%s/hrm/Divisions", eo.ApiUrl, strconv.Itoa(eo.Me.CurrentDivision))
+	urlStr := fmt.Sprintf("%s%s/hrm/Divisions", eo.ApiUrl, strconv.Itoa(eo.Division))
 
 	eo.Divisions = []Division{}
 

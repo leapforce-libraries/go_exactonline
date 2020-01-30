@@ -28,13 +28,14 @@ type ExactOnline struct {
 	TokenURL        string
 	RefreshTokenKey string
 	ApiUrl          string
+	Division        int
 	// bigquery
 	BigQuery          *bigquerytools.BigQuery
 	BigQueryDataset   string
 	BigQueryTablename string
 	InitCallback      callbackFunction
 	// data
-	Me                Me
+	//Me                Me
 	Contacts          []Contact
 	Accounts          []Account
 	SubscriptionTypes []SubscriptionType
