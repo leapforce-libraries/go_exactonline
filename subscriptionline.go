@@ -176,9 +176,9 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error 
 // DeleteSubscription deletes Subscription in ExactOnline
 //
 func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), sl.EntryID.String())
+	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), sl.ID.String())
 
-	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.EntryID)
+	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.ID)
 
 	err := eo.Delete(urlStr)
 	if err != nil {
