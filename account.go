@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	types "github.com/Leapforce-nl/go_types"
 )
@@ -58,9 +59,25 @@ func (a *Account) ToBigQuery() *AccountBigQuery {
 	}
 }
 
+var oldAccount *Account
+
+// SaveValues saves current values in local copy of Account
+//
+func (a *Account) SaveValues() {
+	oldAccount = new(Account)
+	oldAccount.Name = a.Name
+	oldAccount.ChamberOfCommerce = a.ChamberOfCommerce
+	oldAccount.AddressLine1 = a.AddressLine1
+	oldAccount.Postcode = a.Postcode
+	oldAccount.City = a.City
+	oldAccount.State = a.State
+	oldAccount.Country = a.Country
+	oldAccount.AccountManagerFullName = a.AccountManagerFullName
+}
+
 // Values return comma separated values of Account
 //
-func (a *Account) Values() string {
+/*func (a *Account) Values() string {
 	return fmt.Sprintf("Name: %s, ChamberOfCommerce: %s, AddressLine1: %s, Postcode: %s, c: %s, State: %s, Country: %s",
 		a.Name,
 		a.ChamberOfCommerce,
@@ -69,6 +86,88 @@ func (a *Account) Values() string {
 		a.Postcode,
 		a.State,
 		a.Country)
+}*/
+
+func (a *Account) Values() (string, string) {
+	old := ""
+	new := ""
+
+	if oldAccount == nil {
+		new += ",Name:" + a.Name
+	} else if oldAccount.Name != a.Name {
+		old += ",Name:" + oldAccount.Name
+		new += ",Name:" + a.Name
+	}
+
+	if oldAccount != nil {
+		oldAccount.Name = strings.Trim(oldAccount.Name, " ")
+		oldAccount.AddressLine1 = strings.Trim(oldAccount.AddressLine1, " ")
+		oldAccount.Postcode = strings.Trim(oldAccount.Postcode, " ")
+		oldAccount.City = strings.Trim(oldAccount.City, " ")
+		oldAccount.State = strings.Trim(oldAccount.State, " ")
+		oldAccount.Country = strings.Trim(oldAccount.Country, " ")
+	}
+
+	a.Name = strings.Trim(a.Name, " ")
+	a.AddressLine1 = strings.Trim(a.AddressLine1, " ")
+	a.Postcode = strings.Trim(a.Postcode, " ")
+	a.City = strings.Trim(a.City, " ")
+	a.State = strings.Trim(a.State, " ")
+	a.Country = strings.Trim(a.Country, " ")
+
+	if oldAccount == nil {
+		new += ",ChamberOfCommerce:" + a.ChamberOfCommerce
+	} else if oldAccount.ChamberOfCommerce != a.ChamberOfCommerce {
+		old += ",ChamberOfCommerce:" + oldAccount.ChamberOfCommerce
+		new += ",ChamberOfCommerce:" + a.ChamberOfCommerce
+	}
+
+	if oldAccount == nil {
+		new += ",AddressLine1:" + a.AddressLine1
+	} else if oldAccount.AddressLine1 != a.AddressLine1 {
+		old += ",AddressLine1:" + oldAccount.AddressLine1
+		new += ",AddressLine1:" + a.AddressLine1
+	}
+
+	if oldAccount == nil {
+		new += ",Postcode:" + a.Postcode
+	} else if oldAccount.Postcode != a.Postcode {
+		old += ",Postcode:" + oldAccount.Postcode
+		new += ",Postcode:" + a.Postcode
+	}
+
+	if oldAccount == nil {
+		new += ",City:" + a.City
+	} else if oldAccount.City != a.City {
+		old += ",City:" + oldAccount.City
+		new += ",City:" + a.City
+	}
+
+	if oldAccount == nil {
+		new += ",State:" + a.State
+	} else if oldAccount.State != a.State {
+		old += ",State:" + oldAccount.State
+		new += ",State:" + a.State
+	}
+
+	if oldAccount == nil {
+		new += ",Country:" + a.Country
+	} else if oldAccount.Country != a.Country {
+		old += ",Country:" + oldAccount.Country
+		new += ",Country:" + a.Country
+	}
+
+	if oldAccount == nil {
+		new += ",AccountManagerFullName:" + a.AccountManagerFullName
+	} else if oldAccount.AccountManagerFullName != a.AccountManagerFullName {
+		old += ",AccountManagerFullName:" + oldAccount.AccountManagerFullName
+		new += ",AccountManagerFullName:" + a.AccountManagerFullName
+	}
+
+	old = strings.TrimLeft(old, ",")
+	new = strings.TrimLeft(new, ",")
+
+	return old, new
 }
 
 func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {

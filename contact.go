@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	types "github.com/Leapforce-nl/go_types"
 )
@@ -21,9 +22,23 @@ type Contact struct {
 	IsMainContact bool       `json:"IsMainContact"`
 }
 
+var oldContact *Contact
+
+// SaveValues saves current values in local copy of Contact
+//
+func (c *Contact) SaveValues() {
+	oldContact = new(Contact)
+	oldContact.Initials = c.Initials
+	oldContact.FirstName = c.FirstName
+	oldContact.LastName = c.LastName
+	oldContact.Gender = c.Gender
+	oldContact.Title = c.Title
+	oldContact.Email = c.Email
+}
+
 // Values return comma separated values of Account
 //
-func (c *Contact) Values() string {
+/*func (c *Contact) Values() string {
 	return fmt.Sprintf("Initials: %s, FirstName: %s, LastName: %s, Gender: %s, Title: %s, Email: %s",
 		c.Initials,
 		c.FirstName,
@@ -31,6 +46,72 @@ func (c *Contact) Values() string {
 		c.Gender,
 		c.Title,
 		c.Email)
+}*/
+
+func (c *Contact) Values() (string, string) {
+	old := ""
+	new := ""
+
+	if oldContact != nil {
+		oldContact.Initials = strings.Trim(oldContact.Initials, " ")
+		oldContact.FirstName = strings.Trim(oldContact.FirstName, " ")
+		oldContact.LastName = strings.Trim(oldContact.LastName, " ")
+		oldContact.Gender = strings.Trim(oldContact.Gender, " ")
+		oldContact.Title = strings.Trim(oldContact.Title, " ")
+	}
+
+	c.Initials = strings.Trim(c.Initials, " ")
+	c.FirstName = strings.Trim(c.FirstName, " ")
+	c.LastName = strings.Trim(c.LastName, " ")
+	c.Gender = strings.Trim(c.Gender, " ")
+	c.Title = strings.Trim(c.Title, " ")
+
+	if oldContact == nil {
+		new += ",Initials:" + c.Initials
+	} else if oldContact.Initials != c.Initials {
+		old += ",Initials:" + oldContact.Initials
+		new += ",Initials:" + c.Initials
+	}
+
+	if oldContact == nil {
+		new += ",FirstName:" + c.FirstName
+	} else if oldContact.FirstName != c.FirstName {
+		old += ",FirstName:" + oldContact.FirstName
+		new += ",FirstName:" + c.FirstName
+	}
+
+	if oldContact == nil {
+		new += ",LastName:" + c.LastName
+	} else if oldContact.LastName != c.LastName {
+		old += ",LastName:" + oldContact.LastName
+		new += ",LastName:" + c.LastName
+	}
+
+	if oldContact == nil {
+		new += ",Gender:" + c.Gender
+	} else if oldContact.Gender != c.Gender {
+		old += ",Gender:" + oldContact.Gender
+		new += ",Gender:" + c.Gender
+	}
+
+	if oldContact == nil {
+		new += ",Title:" + c.Title
+	} else if oldContact.Title != c.Title {
+		old += ",Title:" + oldContact.Title
+		new += ",Title:" + c.Title
+	}
+
+	if oldContact == nil {
+		new += ",Email:" + c.Email
+	} else if oldContact.Email != c.Email {
+		old += ",Email:" + oldContact.Email
+		new += ",Email:" + c.Email
+	}
+
+	old = strings.TrimLeft(old, ",")
+	new = strings.TrimLeft(new, ",")
+
+	return old, new
 }
 
 func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {

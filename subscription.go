@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
@@ -58,6 +59,69 @@ type SubscriptionInsert struct {
 	//EndDate           types.Date                               `json:"EndDate"`
 	Description       string                                   `json:"Description"`
 	SubscriptionLines []SubscriptionLineInsertWithSubscription `json:"SubscriptionLines"`
+}
+
+func (s *Subscription) StartDateString() string {
+	if s.StartDate == nil {
+		return "-"
+	}
+	return s.StartDate.Time.Format("2006-01-02")
+}
+
+func (s *Subscription) EndDateString() string {
+	if s.EndDate == nil {
+		return "-"
+	}
+	return s.EndDate.Time.Format("2006-01-02")
+}
+
+func (s *Subscription) CancellationDateString() string {
+	if s.CancellationDate == nil {
+		return "-"
+	}
+	return s.CancellationDate.Time.Format("2006-01-02")
+}
+
+var oldSubscription *Subscription
+
+// SaveValues saves current values in local copy of Contact
+//
+func (s *Subscription) SaveValues() {
+	oldSubscription = new(Subscription)
+	oldSubscription.SubscriptionTypeCode = s.SubscriptionTypeCode
+	oldSubscription.StartDate = s.StartDate
+	oldSubscription.CancellationDate = s.CancellationDate
+}
+
+func (s *Subscription) Values() (string, string) {
+	old := ""
+	new := ""
+
+	if oldSubscription == nil {
+		new += ",SubscriptionTypeCode:" + s.SubscriptionTypeCode
+	} else if oldSubscription.SubscriptionTypeCode != s.SubscriptionTypeCode {
+		old += ",SubscriptionTypeCode:" + oldSubscription.SubscriptionTypeCode
+		new += ",SubscriptionTypeCode:" + s.SubscriptionTypeCode
+	}
+
+	if oldSubscription == nil {
+		new += ",StartDate:" + s.StartDateString()
+	} else if oldSubscription.StartDateString() != s.StartDateString() {
+		old += ",StartDate:" + oldSubscription.StartDateString()
+		new += ",StartDate:" + s.StartDateString()
+	}
+
+	if oldSubscription == nil {
+		new += ",CancellationDate:" + s.CancellationDateString()
+	} else if oldSubscription.CancellationDateString() != s.CancellationDateString() {
+		old += ",CancellationDate:" + oldSubscription.CancellationDateString()
+		new += ",CancellationDate:" + s.CancellationDateString()
+	}
+
+	old = strings.TrimLeft(old, ",")
+	new = strings.TrimLeft(new, ",")
+
+	return old, new
 }
 
 // IsValid returns whether or not a Subscription is valid at a certain time.Time
@@ -185,6 +249,10 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) error {
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
+	if s == nil {
+		return nil
+	}
+
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
 
 	su := SubscriptionUpdate{
@@ -217,10 +285,32 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 
 // InsertSubscription inserts Subscription in ExactOnline
 //
-func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
+func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
+	if s == nil {
+		return nil
+	}
+
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Division))
 
-	b, err := json.Marshal(s)
+	si := SubscriptionInsert{}
+	si.EntryID = s.EntryID
+	si.SubscriptionType = s.SubscriptionType
+	si.OrderedBy = s.OrderedBy
+	si.StartDate = s.StartDate
+	si.CancellationDate = s.CancellationDate
+	si.Description = s.Description
+	si.SubscriptionLines = []SubscriptionLineInsertWithSubscription{}
+	for _, sl := range s.SubscriptionLines {
+		sli := SubscriptionLineInsertWithSubscription{}
+		sli.Item = sl.Item
+		sli.FromDate = sl.FromDate
+		sli.ToDate = sl.ToDate
+		sli.UnitCode = sl.UnitCode
+
+		si.SubscriptionLines = append(si.SubscriptionLines, sli)
+	}
+
+	b, err := json.Marshal(si)
 	if err != nil {
 		return err
 	}
@@ -250,6 +340,10 @@ func (eo *ExactOnline) InsertSubscription(s *SubscriptionInsert) error {
 // DeleteSubscription deletes Subscription in ExactOnline
 //
 func (eo *ExactOnline) DeleteSubscription(s *Subscription) error {
+	if s == nil {
+		return nil
+	}
+
 	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
 
 	err := eo.Delete(urlStr)

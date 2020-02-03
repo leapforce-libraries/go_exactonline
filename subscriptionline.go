@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
@@ -12,9 +13,10 @@ import (
 // SubscriptionLine stores SubscriptionLine from exactonline
 //
 type SubscriptionLine struct {
-	ID       types.GUID  `json:"ID"`
-	EntryID  types.GUID  `json:"EntryID"`
-	Item     types.GUID  `json:"Item"`
+	ID       types.GUID `json:"ID"`
+	EntryID  types.GUID `json:"EntryID"`
+	Item     types.GUID `json:"Item"`
+	ItemCode string
 	FromDate *types.Date `json:"FromDate"`
 	ToDate   *types.Date `json:"ToDate"`
 	UnitCode string      `json:"UnitCode"`
@@ -45,6 +47,70 @@ type SubscriptionLineUpdate struct {
 	UnitCode string      `json:"UnitCode"`
 }
 
+func (s *SubscriptionLine) FromDateString() string {
+	if s.FromDate == nil {
+		return "-"
+	}
+	return s.FromDate.Time.Format("2006-01-02")
+}
+
+func (s *SubscriptionLine) ToDateString() string {
+	if s.ToDate == nil {
+		return "-"
+	}
+	return s.ToDate.Time.Format("2006-01-02")
+}
+
+var oldSubscriptionLine *SubscriptionLine
+
+// SaveValues saves current values in local copy of Contact
+//
+func (s *SubscriptionLine) SaveValues() {
+	oldSubscriptionLine = new(SubscriptionLine)
+	oldSubscriptionLine.ItemCode = s.ItemCode
+	oldSubscriptionLine.FromDate = s.FromDate
+	oldSubscriptionLine.ToDate = s.ToDate
+	oldSubscriptionLine.UnitCode = s.UnitCode
+}
+
+func (s *SubscriptionLine) Values() (string, string) {
+	old := ""
+	new := ""
+
+	if oldSubscriptionLine == nil {
+		new += ",ItemCode:" + s.ItemCode
+	} else if oldSubscriptionLine.ItemCode != s.ItemCode {
+		old += ",ItemCode:" + oldSubscriptionLine.ItemCode
+		new += ",ItemCode:" + s.ItemCode
+	}
+
+	if oldSubscriptionLine == nil {
+		new += ",FromDate:" + s.FromDateString()
+	} else if oldSubscriptionLine.FromDateString() != s.FromDateString() {
+		old += ",FromDate:" + oldSubscriptionLine.FromDateString()
+		new += ",FromDate:" + s.FromDateString()
+	}
+
+	if oldSubscriptionLine == nil {
+		new += ",ToDate:" + s.ToDateString()
+	} else if oldSubscriptionLine.ToDateString() != s.ToDateString() {
+		old += ",ToDate:" + oldSubscriptionLine.ToDateString()
+		new += ",ToDate:" + s.ToDateString()
+	}
+
+	if oldSubscriptionLine == nil {
+		new += ",UnitCode:" + s.UnitCode
+	} else if oldSubscriptionLine.UnitCode != s.UnitCode {
+		old += ",UnitCode:" + oldSubscriptionLine.UnitCode
+		new += ",UnitCode:" + s.UnitCode
+	}
+
+	old = strings.TrimLeft(old, ",")
+	new = strings.TrimLeft(new, ",")
+
+	return old, new
+}
+
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
 	selectFields := GetJsonTaggedFieldNames(SubscriptionLine{})
 	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
@@ -63,6 +129,16 @@ func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]Subscript
 			fmt.Println("ERROR in GetSubscriptionLinesInternal:", err)
 			fmt.Println("url:", urlStr)
 			return nil, err
+		}
+
+		for ii := range sl {
+			for _, item := range eo.Items {
+				if sl[ii].Item == item.ID {
+					sl[ii].ItemCode = item.Code
+					//fmt.Println("sl[ii].ItemCode", sl[ii].ItemCode)
+					break
+				}
+			}
 		}
 
 		subscriptionlines = append(subscriptionlines, sl...)
@@ -141,10 +217,21 @@ func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
 
 // InsertSubscriptionLine inserts Subscription in ExactOnline
 //
-func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error {
+func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
+	if sl == nil {
+		return nil
+	}
+
 	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines", eo.ApiUrl, strconv.Itoa(eo.Division))
 
-	b, err := json.Marshal(sl)
+	sli := SubscriptionLineInsert{}
+	sli.EntryID = sl.EntryID
+	sli.Item = sl.Item
+	sli.FromDate = sl.FromDate
+	sli.ToDate = sl.ToDate
+	sli.UnitCode = sl.UnitCode
+
+	b, err := json.Marshal(sli)
 	if err != nil {
 		return err
 	}
@@ -176,6 +263,10 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLineInsert) error 
 // DeleteSubscription deletes Subscription in ExactOnline
 //
 func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
+	if sl == nil {
+		return nil
+	}
+
 	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), sl.ID.String())
 
 	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.ID)
