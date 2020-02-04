@@ -65,12 +65,15 @@ var oldSubscriptionLine *SubscriptionLine
 
 // SaveValues saves current values in local copy of Contact
 //
-func (s *SubscriptionLine) SaveValues() {
-	oldSubscriptionLine = new(SubscriptionLine)
-	oldSubscriptionLine.ItemCode = s.ItemCode
-	oldSubscriptionLine.FromDate = s.FromDate
-	oldSubscriptionLine.ToDate = s.ToDate
-	oldSubscriptionLine.UnitCode = s.UnitCode
+func (s *SubscriptionLine) SaveValues(isNew bool) {
+	oldSubscriptionLine = nil
+	if !isNew {
+		oldSubscriptionLine = new(SubscriptionLine)
+		oldSubscriptionLine.ItemCode = s.ItemCode
+		oldSubscriptionLine.FromDate = s.FromDate
+		oldSubscriptionLine.ToDate = s.ToDate
+		oldSubscriptionLine.UnitCode = s.UnitCode
+	}
 }
 
 func (s *SubscriptionLine) Values() (string, string) {

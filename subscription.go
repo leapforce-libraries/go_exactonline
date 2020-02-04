@@ -86,11 +86,14 @@ var oldSubscription *Subscription
 
 // SaveValues saves current values in local copy of Contact
 //
-func (s *Subscription) SaveValues() {
-	oldSubscription = new(Subscription)
-	oldSubscription.SubscriptionTypeCode = s.SubscriptionTypeCode
-	oldSubscription.StartDate = s.StartDate
-	oldSubscription.CancellationDate = s.CancellationDate
+func (s *Subscription) SaveValues(isNew bool) {
+	oldSubscription = nil
+	if !isNew {
+		oldSubscription = new(Subscription)
+		oldSubscription.SubscriptionTypeCode = s.SubscriptionTypeCode
+		oldSubscription.StartDate = s.StartDate
+		oldSubscription.CancellationDate = s.CancellationDate
+	}
 }
 
 func (s *Subscription) Values() (string, string) {

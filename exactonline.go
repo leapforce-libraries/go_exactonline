@@ -205,6 +205,9 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	LockToken()
+
 	// Add authorization token to header
 	var bearer = "Bearer " + eo.Token.AccessToken
 	req.Header.Add("authorization", bearer)
@@ -212,6 +215,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 
 	// Send out the HTTP request
 	res, err := client.Do(req)
+	UnlockToken()
 	if err != nil {
 		return "", err
 	}
@@ -290,6 +294,9 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
+
+	LockToken()
+
 	// Add authorization token to header
 	var bearer = "Bearer " + eo.Token.AccessToken
 	req.Header.Add("authorization", bearer)
@@ -298,6 +305,7 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 
 	// Send out the HTTP request
 	res, err := client.Do(req)
+	UnlockToken()
 	if err != nil {
 		return err
 	}
@@ -340,6 +348,9 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 		fmt.Println("errNewRequest")
 		return err
 	}
+
+	LockToken()
+
 	// Add authorization token to header
 	var bearer = "Bearer " + eo.Token.AccessToken
 	req.Header.Add("authorization", bearer)
@@ -348,6 +359,7 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 
 	// Send out the HTTP request
 	res, err := client.Do(req)
+	UnlockToken()
 	if err != nil {
 		fmt.Println("errDo")
 		return err
@@ -399,6 +411,9 @@ func (eo *ExactOnline) Delete(url string) error {
 		fmt.Println("errNewRequest")
 		return err
 	}
+
+	LockToken()
+
 	// Add authorization token to header
 	var bearer = "Bearer " + eo.Token.AccessToken
 	req.Header.Add("authorization", bearer)
@@ -407,6 +422,7 @@ func (eo *ExactOnline) Delete(url string) error {
 
 	// Send out the HTTP request
 	res, err := client.Do(req)
+	UnlockToken()
 	if err != nil {
 		fmt.Println("errDo")
 		return err

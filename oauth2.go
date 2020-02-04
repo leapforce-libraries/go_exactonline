@@ -9,10 +9,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
 )
+
+var tokenMutex sync.Mutex
 
 type Token struct {
 	AccessToken  string `json:"access_token"`
@@ -20,6 +23,14 @@ type Token struct {
 	ExpiresIn    string `json:"expires_in"`
 	Expiry       time.Time
 	RefreshToken string `json:"refresh_token"`
+}
+
+func LockToken() {
+	tokenMutex.Lock()
+}
+
+func UnlockToken() {
+	tokenMutex.Unlock()
 }
 
 func (t *Token) Useable() bool {
@@ -46,7 +57,7 @@ func (t *Token) IsExpired() (bool, error) {
 	if !t.Useable() {
 		return true, &types.ErrorString{"Token is not valid."}
 	}
-	if t.Expiry.Add(-30 * time.Second).Before(time.Now()) {
+	if t.Expiry.Add(-60 * time.Second).Before(time.Now()) {
 		return true, nil
 	}
 	return false, nil
@@ -77,6 +88,8 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		fmt.Println("GetTokenGUID:", guid)
 		fmt.Println(eo.Token.AccessToken)
+		fmt.Println("Expiry:", eo.Token.Expiry)
+		fmt.Println("Now:", time.Now())
 		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
 	}
 
@@ -91,12 +104,23 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 		return err
 	}
 
+	fmt.Println("old token:")
+	fmt.Println(eo.Token.AccessToken)
+	fmt.Println("old refresh token:")
+	fmt.Println(eo.Token.RefreshToken)
+	fmt.Println("old expiry:")
+	fmt.Println(eo.Token.Expiry)
+
 	expiresIn, err := strconv.ParseInt(token.ExpiresIn, 10, 64)
 	if err != nil {
 		return err
 	}
 	token.Expiry = time.Now().Add(time.Duration(expiresIn) * time.Second)
-	eo.Token = &token
+	//token.Expiry = time.Now().Add(time.Duration(60) * time.Second)
+	//eo.Token = &token
+	eo.Token.Expiry = token.Expiry
+	eo.Token.RefreshToken = token.RefreshToken
+	eo.Token.AccessToken = token.AccessToken
 
 	err = eo.SaveTokenToBigQuery()
 	if err != nil {
@@ -104,8 +128,12 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 	}
 
 	fmt.Println("new token:")
-	fmt.Println("GetTokenGUID:", guid)
 	fmt.Println(eo.Token.AccessToken)
+	fmt.Println("new refresh token:")
+	fmt.Println(eo.Token.RefreshToken)
+	fmt.Println("new expiry:")
+	fmt.Println(eo.Token.Expiry)
+	fmt.Println("GetTokenGUID:", guid)
 
 	return nil
 }
@@ -138,6 +166,13 @@ func (eo *ExactOnline) GetTokenFromRefreshToken() error {
 }
 
 func (eo *ExactOnline) ValidateToken() error {
+	LockToken()
+	defer UnlockToken()
+
+	if eo.Token == nil {
+		eo.Token = new(Token)
+	}
+
 	if !eo.Token.Useable() {
 		if !eo.Token.Refreshable() {
 			err := eo.GetTokenFromBigQuery()

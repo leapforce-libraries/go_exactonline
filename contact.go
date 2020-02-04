@@ -26,14 +26,17 @@ var oldContact *Contact
 
 // SaveValues saves current values in local copy of Contact
 //
-func (c *Contact) SaveValues() {
-	oldContact = new(Contact)
-	oldContact.Initials = c.Initials
-	oldContact.FirstName = c.FirstName
-	oldContact.LastName = c.LastName
-	oldContact.Gender = c.Gender
-	oldContact.Title = c.Title
-	oldContact.Email = c.Email
+func (c *Contact) SaveValues(isNew bool) {
+	oldContact = nil
+	if !isNew {
+		oldContact = new(Contact)
+		oldContact.Initials = c.Initials
+		oldContact.FirstName = c.FirstName
+		oldContact.LastName = c.LastName
+		oldContact.Gender = c.Gender
+		oldContact.Title = c.Title
+		oldContact.Email = c.Email
+	}
 }
 
 // Values return comma separated values of Account

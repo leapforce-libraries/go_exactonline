@@ -63,16 +63,19 @@ var oldAccount *Account
 
 // SaveValues saves current values in local copy of Account
 //
-func (a *Account) SaveValues() {
-	oldAccount = new(Account)
-	oldAccount.Name = a.Name
-	oldAccount.ChamberOfCommerce = a.ChamberOfCommerce
-	oldAccount.AddressLine1 = a.AddressLine1
-	oldAccount.Postcode = a.Postcode
-	oldAccount.City = a.City
-	oldAccount.State = a.State
-	oldAccount.Country = a.Country
-	oldAccount.AccountManagerFullName = a.AccountManagerFullName
+func (a *Account) SaveValues(isNew bool) {
+	oldAccount = nil
+	if !isNew {
+		oldAccount = new(Account)
+		oldAccount.Name = a.Name
+		oldAccount.ChamberOfCommerce = a.ChamberOfCommerce
+		oldAccount.AddressLine1 = a.AddressLine1
+		oldAccount.Postcode = a.Postcode
+		oldAccount.City = a.City
+		oldAccount.State = a.State
+		oldAccount.Country = a.Country
+		oldAccount.AccountManagerFullName = a.AccountManagerFullName
+	}
 }
 
 // Values return comma separated values of Account
