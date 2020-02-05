@@ -62,12 +62,13 @@ func (s *SubscriptionLine) ToDateString() string {
 }
 
 var oldSubscriptionLine *SubscriptionLine
+var newSubscriptionLine *SubscriptionLine
 
 // SaveValues saves current values in local copy of Contact
 //
-func (s *SubscriptionLine) SaveValues(isNew bool) {
+func (s *SubscriptionLine) SaveValues(inserted bool) {
 	oldSubscriptionLine = nil
-	if !isNew {
+	if !inserted {
 		oldSubscriptionLine = new(SubscriptionLine)
 		oldSubscriptionLine.ItemCode = s.ItemCode
 		oldSubscriptionLine.FromDate = s.FromDate
@@ -76,42 +77,59 @@ func (s *SubscriptionLine) SaveValues(isNew bool) {
 	}
 }
 
-func (s *SubscriptionLine) Values() (string, string) {
-	old := ""
-	new := ""
+func (s *SubscriptionLine) Values(deleted bool) (string, string) {
+	oldValues := ""
+	newValues := ""
 
-	if oldSubscriptionLine == nil {
-		new += ",ItemCode:" + s.ItemCode
-	} else if oldSubscriptionLine.ItemCode != s.ItemCode {
-		old += ",ItemCode:" + oldSubscriptionLine.ItemCode
-		new += ",ItemCode:" + s.ItemCode
+	newSubscriptionLine = nil
+	if !deleted {
+		newSubscriptionLine = new(SubscriptionLine)
+		newSubscriptionLine.ItemCode = s.ItemCode
+		newSubscriptionLine.FromDate = s.FromDate
+		newSubscriptionLine.ToDate = s.ToDate
+		newSubscriptionLine.UnitCode = s.UnitCode
 	}
 
 	if oldSubscriptionLine == nil {
-		new += ",FromDate:" + s.FromDateString()
-	} else if oldSubscriptionLine.FromDateString() != s.FromDateString() {
-		old += ",FromDate:" + oldSubscriptionLine.FromDateString()
-		new += ",FromDate:" + s.FromDateString()
+		newValues += ",ItemCode:" + newSubscriptionLine.ItemCode
+	} else if newSubscriptionLine == nil {
+		oldValues += ",ItemCode:" + oldSubscriptionLine.ItemCode
+	} else if oldSubscriptionLine.ItemCode != newSubscriptionLine.ItemCode {
+		oldValues += ",ItemCode:" + oldSubscriptionLine.ItemCode
+		newValues += ",ItemCode:" + newSubscriptionLine.ItemCode
 	}
 
 	if oldSubscriptionLine == nil {
-		new += ",ToDate:" + s.ToDateString()
-	} else if oldSubscriptionLine.ToDateString() != s.ToDateString() {
-		old += ",ToDate:" + oldSubscriptionLine.ToDateString()
-		new += ",ToDate:" + s.ToDateString()
+		newValues += ",FromDate:" + newSubscriptionLine.FromDateString()
+	} else if newSubscriptionLine == nil {
+		oldValues += ",FromDate:" + oldSubscriptionLine.FromDateString()
+	} else if oldSubscriptionLine.FromDateString() != newSubscriptionLine.FromDateString() {
+		oldValues += ",FromDate:" + oldSubscriptionLine.FromDateString()
+		newValues += ",FromDate:" + newSubscriptionLine.FromDateString()
 	}
 
 	if oldSubscriptionLine == nil {
-		new += ",UnitCode:" + s.UnitCode
-	} else if oldSubscriptionLine.UnitCode != s.UnitCode {
-		old += ",UnitCode:" + oldSubscriptionLine.UnitCode
-		new += ",UnitCode:" + s.UnitCode
+		newValues += ",ToDate:" + newSubscriptionLine.ToDateString()
+	} else if newSubscriptionLine == nil {
+		oldValues += ",ToDate:" + oldSubscriptionLine.ToDateString()
+	} else if oldSubscriptionLine.ToDateString() != newSubscriptionLine.ToDateString() {
+		oldValues += ",ToDate:" + oldSubscriptionLine.ToDateString()
+		newValues += ",ToDate:" + newSubscriptionLine.ToDateString()
 	}
 
-	old = strings.TrimLeft(old, ",")
-	new = strings.TrimLeft(new, ",")
+	if oldSubscriptionLine == nil {
+		newValues += ",UnitCode:" + newSubscriptionLine.UnitCode
+	} else if newSubscriptionLine == nil {
+		oldValues += ",UnitCode:" + oldSubscriptionLine.UnitCode
+	} else if oldSubscriptionLine.UnitCode != newSubscriptionLine.UnitCode {
+		oldValues += ",UnitCode:" + oldSubscriptionLine.UnitCode
+		newValues += ",UnitCode:" + newSubscriptionLine.UnitCode
+	}
 
-	return old, new
+	oldValues = strings.TrimLeft(oldValues, ",")
+	newValues = strings.TrimLeft(newValues, ",")
+
+	return oldValues, newValues
 }
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {

@@ -26,9 +26,9 @@ var oldContact *Contact
 
 // SaveValues saves current values in local copy of Contact
 //
-func (c *Contact) SaveValues(isNew bool) {
+func (c *Contact) SaveValues(inserted bool) {
 	oldContact = nil
-	if !isNew {
+	if !inserted {
 		oldContact = new(Contact)
 		oldContact.Initials = c.Initials
 		oldContact.FirstName = c.FirstName

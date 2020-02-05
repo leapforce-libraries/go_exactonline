@@ -87,9 +87,15 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		fmt.Println("GetTokenGUID:", guid)
-		fmt.Println(eo.Token.AccessToken)
+		fmt.Println("AccessToken:", eo.Token.AccessToken)
+		fmt.Println("Refresh:", eo.Token.RefreshToken)
 		fmt.Println("Expiry:", eo.Token.Expiry)
 		fmt.Println("Now:", time.Now())
+
+		if res.StatusCode == 401 {
+			eo.InitToken()
+		}
+
 		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
 	}
 
@@ -169,9 +175,9 @@ func (eo *ExactOnline) ValidateToken() error {
 	LockToken()
 	defer UnlockToken()
 
-	if eo.Token == nil {
-		eo.Token = new(Token)
-	}
+	//if eo.Token == nil {
+	//	eo.Token = new(Token)
+	//}
 
 	if !eo.Token.Useable() {
 		if !eo.Token.Refreshable() {

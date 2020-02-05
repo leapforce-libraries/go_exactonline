@@ -83,12 +83,13 @@ func (s *Subscription) CancellationDateString() string {
 }
 
 var oldSubscription *Subscription
+var newSubscription *Subscription
 
 // SaveValues saves current values in local copy of Contact
 //
-func (s *Subscription) SaveValues(isNew bool) {
+func (s *Subscription) SaveValues(inserted bool) {
 	oldSubscription = nil
-	if !isNew {
+	if !inserted {
 		oldSubscription = new(Subscription)
 		oldSubscription.SubscriptionTypeCode = s.SubscriptionTypeCode
 		oldSubscription.StartDate = s.StartDate
@@ -96,35 +97,49 @@ func (s *Subscription) SaveValues(isNew bool) {
 	}
 }
 
-func (s *Subscription) Values() (string, string) {
-	old := ""
-	new := ""
+func (s *Subscription) Values(deleted bool) (string, string) {
+	oldValues := ""
+	newValues := ""
 
-	if oldSubscription == nil {
-		new += ",SubscriptionTypeCode:" + s.SubscriptionTypeCode
-	} else if oldSubscription.SubscriptionTypeCode != s.SubscriptionTypeCode {
-		old += ",SubscriptionTypeCode:" + oldSubscription.SubscriptionTypeCode
-		new += ",SubscriptionTypeCode:" + s.SubscriptionTypeCode
+	newSubscription = nil
+	if !deleted {
+		newSubscription = new(Subscription)
+		newSubscription.SubscriptionTypeCode = s.SubscriptionTypeCode
+		newSubscription.StartDate = s.StartDate
+		newSubscription.CancellationDate = s.CancellationDate
 	}
 
 	if oldSubscription == nil {
-		new += ",StartDate:" + s.StartDateString()
-	} else if oldSubscription.StartDateString() != s.StartDateString() {
-		old += ",StartDate:" + oldSubscription.StartDateString()
-		new += ",StartDate:" + s.StartDateString()
+		newValues += ",SubscriptionTypeCode:" + newSubscription.SubscriptionTypeCode
+	} else if newSubscription == nil {
+		oldValues += ",SubscriptionTypeCode:" + oldSubscription.SubscriptionTypeCode
+	} else if oldSubscription.SubscriptionTypeCode != newSubscription.SubscriptionTypeCode {
+		oldValues += ",SubscriptionTypeCode:" + oldSubscription.SubscriptionTypeCode
+		newValues += ",SubscriptionTypeCode:" + newSubscription.SubscriptionTypeCode
 	}
 
 	if oldSubscription == nil {
-		new += ",CancellationDate:" + s.CancellationDateString()
-	} else if oldSubscription.CancellationDateString() != s.CancellationDateString() {
-		old += ",CancellationDate:" + oldSubscription.CancellationDateString()
-		new += ",CancellationDate:" + s.CancellationDateString()
+		newValues += ",StartDate:" + newSubscription.StartDateString()
+	} else if newSubscription == nil {
+		oldValues += ",StartDate:" + oldSubscription.StartDateString()
+	} else if oldSubscription.StartDateString() != newSubscription.StartDateString() {
+		oldValues += ",StartDate:" + oldSubscription.StartDateString()
+		newValues += ",StartDate:" + newSubscription.StartDateString()
 	}
 
-	old = strings.TrimLeft(old, ",")
-	new = strings.TrimLeft(new, ",")
+	if oldSubscription == nil {
+		newValues += ",CancellationDateString:" + newSubscription.CancellationDateString()
+	} else if newSubscription == nil {
+		oldValues += ",CancellationDateString:" + oldSubscription.CancellationDateString()
+	} else if oldSubscription.CancellationDateString() != newSubscription.CancellationDateString() {
+		oldValues += ",CancellationDateString:" + oldSubscription.CancellationDateString()
+		newValues += ",CancellationDateString:" + newSubscription.CancellationDateString()
+	}
 
-	return old, new
+	oldValues = strings.TrimLeft(oldValues, ",")
+	newValues = strings.TrimLeft(newValues, ",")
+
+	return oldValues, newValues
 }
 
 // IsValid returns whether or not a Subscription is valid at a certain time.Time

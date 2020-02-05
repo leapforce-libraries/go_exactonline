@@ -63,9 +63,9 @@ var oldAccount *Account
 
 // SaveValues saves current values in local copy of Account
 //
-func (a *Account) SaveValues(isNew bool) {
+func (a *Account) SaveValues(inserted bool) {
 	oldAccount = nil
-	if !isNew {
+	if !inserted {
 		oldAccount = new(Account)
 		oldAccount.Name = a.Name
 		oldAccount.ChamberOfCommerce = a.ChamberOfCommerce

@@ -52,6 +52,10 @@ func (eo *ExactOnline) GetTokenFromBigQuery() error {
 		}*/
 
 	//token := new(Token)
+	if eo.Token == nil {
+		eo.Token = new(Token)
+	}
+
 	eo.Token.TokenType = "bearer"
 	eo.Token.Expiry = time.Now().Add(-10 * time.Second)
 	eo.Token.RefreshToken = token.RefreshToken
