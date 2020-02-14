@@ -50,6 +50,7 @@ type ExactOnline struct {
 	// rate limit
 	XRateLimitMinutelyRemaining int
 	XRateLimitMinutelyReset     int64
+	IsLive                      bool
 }
 
 type callbackFunction func()
@@ -280,7 +281,9 @@ func (eo *ExactOnline) PrintError(res *http.Response) error {
 
 	//fmt.Println(ee.Err.Message.Value)
 	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
-	sentry.CaptureMessage(message)
+	if eo.IsLive {
+		sentry.CaptureMessage(message)
+	}
 	return &types.ErrorString{message}
 }
 

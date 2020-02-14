@@ -13,6 +13,7 @@ import (
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
+	"github.com/getsentry/sentry-go"
 )
 
 var tokenMutex sync.Mutex
@@ -93,6 +94,9 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 		fmt.Println("Now:", time.Now())
 
 		if res.StatusCode == 401 {
+			if eo.IsLive {
+				sentry.CaptureMessage("ExactOnline refreshtoken not valid, login needed to retrieve a new one.")
+			}
 			eo.InitToken()
 		}
 
@@ -196,6 +200,9 @@ func (eo *ExactOnline) ValidateToken() error {
 		}
 
 		if !eo.Token.Useable() {
+			if eo.IsLive {
+				sentry.CaptureMessage("ExactOnline refreshtoken not found or empty, login needed to retrieve a new one.")
+			}
 			err := eo.InitToken()
 			if err != nil {
 				return err
@@ -220,6 +227,7 @@ func (eo *ExactOnline) ValidateToken() error {
 }
 
 func (eo *ExactOnline) InitToken() error {
+
 	if eo == nil {
 		return &types.ErrorString{"ExactOnline variable not initialized"}
 	}
