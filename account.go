@@ -19,6 +19,7 @@ type Account struct {
 	City                   string     `json:"City"`
 	State                  string     `json:"State"`
 	Country                string     `json:"Country"`
+	Status                 string     `json:"Status"`
 	AccountManager         types.GUID `json:"AccountManager"`
 	AccountManagerFullName string     `json:"AccountManagerFullName"`
 	MainContact            types.GUID `json:"MainContact"`
@@ -36,6 +37,7 @@ type AccountBigQuery struct {
 	City                   string
 	State                  string
 	Country                string
+	Status                 string
 	AccountManager         string
 	AccountManagerFullName string
 	MainContact            string
@@ -53,6 +55,7 @@ func (a *Account) ToBigQuery() *AccountBigQuery {
 		a.City,
 		a.State,
 		a.Country,
+		a.Status,
 		a.AccountManager.String(),
 		a.AccountManagerFullName,
 		a.MainContact.String(),
@@ -74,6 +77,7 @@ func (a *Account) SaveValues(inserted bool) {
 		oldAccount.City = a.City
 		oldAccount.State = a.State
 		oldAccount.Country = a.Country
+		oldAccount.Status = a.Status
 		oldAccount.AccountManagerFullName = a.AccountManagerFullName
 	}
 }
@@ -109,6 +113,7 @@ func (a *Account) Values() (string, string) {
 		oldAccount.City = strings.Trim(oldAccount.City, " ")
 		oldAccount.State = strings.Trim(oldAccount.State, " ")
 		oldAccount.Country = strings.Trim(oldAccount.Country, " ")
+		oldAccount.Status = strings.Trim(oldAccount.Status, " ")
 	}
 
 	a.Name = strings.Trim(a.Name, " ")
@@ -117,6 +122,7 @@ func (a *Account) Values() (string, string) {
 	a.City = strings.Trim(a.City, " ")
 	a.State = strings.Trim(a.State, " ")
 	a.Country = strings.Trim(a.Country, " ")
+	a.Status = strings.Trim(a.Status, " ")
 
 	if oldAccount == nil {
 		new += ",ChamberOfCommerce:" + a.ChamberOfCommerce
@@ -158,6 +164,13 @@ func (a *Account) Values() (string, string) {
 	} else if oldAccount.Country != a.Country {
 		old += ",Country:" + oldAccount.Country
 		new += ",Country:" + a.Country
+	}
+
+	if oldAccount == nil {
+		new += ",Status:" + a.Status
+	} else if oldAccount.Status != a.Status {
+		old += ",Status:" + oldAccount.Status
+		new += ",Status:" + a.Status
 	}
 
 	if oldAccount == nil {
@@ -233,6 +246,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
 	data["Country"] = a.Country
+	data["Status"] = a.Status
 	//data["State"] = "ZH"   //a.StateName + "_updated3"
 	//data["Country"] = "NL" //a.CountryName + "_updated3"
 	//data["AccountManagerFullName"] = a.AccountManagerFullName + "_updated3"
@@ -285,6 +299,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
 	data["Country"] = a.Country
+	data["Status"] = a.Status
 	//data["State"] = a.StateName
 	//data["Country"] = a.CountryName
 	//data["AccountManagerFullName"] = a.AccountManagerFullName
