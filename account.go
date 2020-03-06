@@ -245,6 +245,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	data["AddressLine1"] = a.AddressLine1
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
+	data["State"] = "" //a.State
 	data["Country"] = a.Country
 	data["Status"] = a.Status
 	//data["State"] = "ZH"   //a.StateName + "_updated3"
@@ -298,6 +299,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	data["AddressLine1"] = a.AddressLine1
 	data["Postcode"] = a.Postcode
 	data["City"] = a.City
+	data["State"] = "" //a.State
 	data["Country"] = a.Country
 	data["Status"] = a.Status
 	//data["State"] = a.StateName
