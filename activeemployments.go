@@ -28,6 +28,32 @@ type ActiveEmployment struct {
 	DepartmentCode           string      `json:"DepartmentCode"`
 	DepartmentDescription    string      `json:"DepartmentDescription"`
 	Division                 int64       `json:"Division"`
+	Employee                 types.GUID  `json:"Employee"`
+	EmployeeFullName         string      `json:"EmployeeFullName"`
+	EmployeeHID              int64       `json:"EmployeeHID"`
+	EmploymentOrganization   types.GUID  `json:"EmploymentOrganization"`
+	EndDate                  *types.Date `json:"EndDate,omitempty"`
+	HID                      int64       `json:"HID"`
+	HourlyWage               float64     `json:"HourlyWage"`
+	InternalRate             float64     `json:"InternalRate"`
+	Jobtitle                 types.GUID  `json:"Jobtitle"`
+	JobtitleDescription      string      `json:"JobtitleDescription"`
+	Modified                 *types.Date `json:"Modified,omitempty"`
+	Modifier                 types.GUID  `json:"Modifier"`
+	ModifierFullName         string      `json:"ModifierFullName"`
+	ReasonEnd                int64       `json:"ReasonEnd"`
+	ReasonEndDescription     string      `json:"ReasonEndDescription"`
+	ReasonEndFlex            int64       `json:"ReasonEndFlex"`
+	ReasonEndFlexDescription string      `json:"ReasonEndFlexDescription"`
+	Salary                   types.GUID  `json:"Salary"`
+	Schedule                 types.GUID  `json:"Schedule"`
+	ScheduleAverageHours     float64     `json:"ScheduleAverageHours"`
+	ScheduleCode             string      `json:"ScheduleCode"`
+	ScheduleDays             float64     `json:"ScheduleDays"`
+	ScheduleDescription      string      `json:"ScheduleDescription"`
+	ScheduleHours            float64     `json:"ScheduleHours"`
+	StartDate                *types.Date `json:"StartDate,omitempty"`
+	StartDateOrganization    *types.Date `json:"StartDateOrganization,omitempty"`
 }
 
 func (eo *ExactOnline) GetActiveEmploymentsInternal(filter string) (*[]ActiveEmployment, error) {
@@ -53,8 +79,7 @@ func (eo *ExactOnline) GetActiveEmploymentsInternal(filter string) (*[]ActiveEmp
 		activeEmployments = append(activeEmployments, ac...)
 
 		urlStr = str
-
-		urlStr = ""
+		//urlStr = ""
 	}
 
 	return &activeEmployments, nil

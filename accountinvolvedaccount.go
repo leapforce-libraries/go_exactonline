@@ -10,48 +10,21 @@ import (
 // AccountInvolvedAccount stores AccountInvolvedAccount from exactonline
 //
 type AccountInvolvedAccount struct {
-	Account     types.GUID  `json:"Account"`
-	AccountName string      `json:"AccountName"`
-	Created     *types.Date `json:"Created,omitempty"`
-	Creator     types.GUID  `json:"Creator"`
+	Account                                      types.GUID  `json:"Account"`
+	AccountName                                  string      `json:"AccountName"`
+	Created                                      *types.Date `json:"Created,omitempty"`
+	Creator                                      types.GUID  `json:"Creator"`
+	CreatorFullName                              string      `json:"CreatorFullName"`
+	Division                                     int64       `json:"Division"`
+	InvolvedAccount                              types.GUID  `json:"InvolvedAccount"`
+	InvolvedAccountRelationTypeDescription       string      `json:"InvolvedAccountRelationTypeDescription"`
+	InvolvedAccountRelationTypeDescriptionTermId int64       `json:"InvolvedAccountRelationTypeDescriptionTermId"`
+	InvolvedAccountRelationTypeId                int64       `json:"InvolvedAccountRelationTypeId"`
+	Modified                                     *types.Date `json:"Modified,omitempty"`
+	Modifier                                     types.GUID  `json:"Modifier"`
+	ModifierFullName                             string      `json:"ModifierFullName"`
+	Notes                                        string      `json:"Notes"`
 }
-
-/*
-// AccountBigQuery stores account from exactonline
-//
-type AccountBigQuery struct {
-	ID                     string
-	Name                   string
-	ChamberOfCommerce      string
-	AddressLine1           string
-	Postcode               string
-	City                   string
-	State                  string
-	Country                string
-	Status                 string
-	AccountManager         string
-	AccountManagerFullName string
-	MainContact            string
-}
-
-// ToBigQuery convert Subscription to SubscriptionBq
-//
-func (a *Account) ToBigQuery() *AccountBigQuery {
-	return &AccountBigQuery{
-		a.ID.String(),
-		a.Name,
-		a.ChamberOfCommerce,
-		a.AddressLine1,
-		a.Postcode,
-		a.City,
-		a.State,
-		a.Country,
-		a.Status,
-		a.AccountManager.String(),
-		a.AccountManagerFullName,
-		a.MainContact.String(),
-	}
-}*/
 
 func (eo *ExactOnline) GetAccountInvolvedAccountsInternal(filter string) (*[]AccountInvolvedAccount, error) {
 	selectFields := GetJsonTaggedFieldNames(AccountInvolvedAccount{})

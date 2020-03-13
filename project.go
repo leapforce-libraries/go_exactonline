@@ -34,6 +34,30 @@ type Project struct {
 	Description               string      `json:"Description"`
 	Division                  int64       `json:"Division"`
 	DivisionName              string      `json:"DivisionName"`
+	EndDate                   *types.Date `json:"EndDate,omitempty"`
+	FixedPriceItem            types.GUID  `json:"FixedPriceItem"`
+	FixedPriceItemDescription string      `json:"FixedPriceItemDescription"`
+	HasWBSLines               bool        `json:"HasWBSLines"`
+	InternalNotes             string      `json:"InternalNotes"`
+	InvoiceAsQuoted           bool        `json:"InvoiceAsQuoted"`
+	Manager                   types.GUID  `json:"Manager"`
+	ManagerFullname           string      `json:"ManagerFullname"`
+	MarkupPercentage          float64     `json:"MarkupPercentage"`
+	Modified                  *types.Date `json:"Modified,omitempty"`
+	Modifier                  types.GUID  `json:"Modifier"`
+	ModifierFullName          string      `json:"ModifierFullName"`
+	Notes                     string      `json:"Notes"`
+	PrepaidItem               types.GUID  `json:"PrepaidItem"`
+	PrepaidItemDescription    string      `json:"PrepaidItemDescription"`
+	PrepaidType               int64       `json:"PrepaidType"`
+	PrepaidTypeDescription    string      `json:"PrepaidTypeDescription"`
+	SalesTimeQuantity         float64     `json:"SalesTimeQuantity"`
+	SourceQuotation           types.GUID  `json:"SourceQuotation"`
+	StartDate                 *types.Date `json:"StartDate,omitempty"`
+	TimeQuantityToAlert       float64     `json:"TimeQuantityToAlert"`
+	Type                      int64       `json:"Type"`
+	TypeDescription           string      `json:"TypeDescription"`
+	UseBillingMilestones      bool        `json:"UseBillingMilestones"`
 }
 
 func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
@@ -59,8 +83,7 @@ func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
 		projects = append(projects, ac...)
 
 		urlStr = str
-
-		urlStr = ""
+		//urlStr = ""
 	}
 
 	return &projects, nil
