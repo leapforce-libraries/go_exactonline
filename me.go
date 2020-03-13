@@ -7,17 +7,17 @@ type Me struct {
 	FirstName       string `json:"FirstName"`
 }
 
-func (eo *ExactOnline) GetMe() error {
+func (eo *ExactOnline) GetMe() (*Me, error) {
 	urlStr := "https://start.exactonline.nl/api/v1/current/Me"
 
 	me := []Me{}
 
 	_, err := eo.Get(urlStr, &me)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	//eo.Me = me[0]
 
-	return nil
+	return &me[0], nil
 }
