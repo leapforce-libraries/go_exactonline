@@ -60,6 +60,15 @@ func (eo *ExactOnline) GetProjectHourBudgetsInternal(filter string) (*[]ProjectH
 	return &projectHourBudgets, nil
 }
 
+func (eo *ExactOnline) GetProjectHourBudgets() (*[]ProjectHourBudget, error) {
+	acc, err := eo.GetProjectHourBudgetsInternal("")
+	if err != nil {
+		return nil, err
+	}
+
+	return acc, nil
+}
+
 func (eo *ExactOnline) GetProjectHourBudgetsByProject(projectID types.GUID) (*[]ProjectHourBudget, error) {
 	filter := fmt.Sprintf("Project eq guid'%s'", projectID.String())
 
