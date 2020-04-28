@@ -131,10 +131,12 @@ func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) error {
 // wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
 func (eo *ExactOnline) Wait() error {
 	if eo.XRateLimitMinutelyRemaining < 1 {
-		reset := time.Unix(eo.XRateLimitMinutelyReset, 0)
+		reset := time.Unix(eo.XRateLimitMinutelyReset/1000, 0)
 		ms := reset.Sub(time.Now()).Milliseconds()
 
 		if ms > 0 {
+			fmt.Println("eo.XRateLimitMinutelyReset:", eo.XRateLimitMinutelyReset)
+			fmt.Println("reset:", reset)
 			fmt.Println("waiting ms:", ms)
 			time.Sleep(time.Duration(ms+1000) * time.Millisecond)
 		}

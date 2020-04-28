@@ -10,15 +10,17 @@ import (
 // Project stores Project from exactonline
 //
 type Project struct {
-	Account                   types.GUID  `json:"Account"`
-	AccountCode               string      `json:"AccountCode"`
-	AccountContact            types.GUID  `json:"AccountContact"`
-	AccountName               string      `json:"AccountName"`
-	AllowAdditionalInvoicing  bool        `json:"AllowAdditionalInvoicing"`
-	BlockEntry                bool        `json:"BlockEntry"`
-	BlockRebilling            bool        `json:"BlockRebilling"`
-	BudgetedAmount            float64     `json:"BudgetedAmount"`
-	BudgetedCosts             float64     `json:"BudgetedCosts"`
+	ID                        types.GUID `json:"ID"`
+	Account                   types.GUID `json:"Account"`
+	AccountCode               string     `json:"AccountCode"`
+	AccountContact            types.GUID `json:"AccountContact"`
+	AccountName               string     `json:"AccountName"`
+	AllowAdditionalInvoicing  bool       `json:"AllowAdditionalInvoicing"`
+	BlockEntry                bool       `json:"BlockEntry"`
+	BlockRebilling            bool       `json:"BlockRebilling"`
+	BudgetedAmount            float64    `json:"BudgetedAmount"`
+	BudgetedCosts             float64    `json:"BudgetedCosts"`
+	BudgetedHoursPerHourType  []ProjectHourBudget
 	BudgetedRevenue           float64     `json:"BudgetedRevenue"`
 	BudgetOverrunHours        byte        `json:"BudgetOverrunHours"`
 	BudgetType                int64       `json:"BudgetType"`
@@ -71,16 +73,25 @@ func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
 	projects := []Project{}
 
 	for urlStr != "" {
-		ac := []Project{}
+		ps := []Project{}
 
-		str, err := eo.Get(urlStr, &ac)
+		str, err := eo.Get(urlStr, &ps)
 		if err != nil {
 			fmt.Println("ERROR in GetProjectsInternal:", err)
 			fmt.Println("url:", urlStr)
 			return nil, err
 		}
 
-		projects = append(projects, ac...)
+		for index, p := range ps {
+			budgetedHours, err := eo.GetProjectHourBudgetsByProject(p.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			ps[index].BudgetedHoursPerHourType = *budgetedHours
+		}
+
+		projects = append(projects, ps...)
 
 		urlStr = str
 		//urlStr = ""
