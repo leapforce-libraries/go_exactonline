@@ -25,7 +25,7 @@ type GLAccountClassificationMapping struct {
 
 func (eo *ExactOnline) GetGLAccountClassificationMappingsInternal(filter string) (*[]GLAccountClassificationMapping, error) {
 	selectFields := GetJsonTaggedFieldNames(GLAccountClassificationMapping{})
-	urlStr := fmt.Sprintf("%sbeta/%s/financial/GLAccountClassificationMappings?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	urlStr := fmt.Sprintf("%s%s/financial/GLAccountClassificationMappings?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
