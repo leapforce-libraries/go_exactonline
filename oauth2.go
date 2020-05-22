@@ -26,6 +26,11 @@ type Token struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type ApiError struct {
+	Error       string `json:"error"`
+	Description string `json:"error_description,omitempty"`
+}
+
 func LockToken() {
 	tokenMutex.Lock()
 }
@@ -86,6 +91,10 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 		return err
 	}
 
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		fmt.Println("GetTokenGUID:", guid)
 		fmt.Println("AccessToken:", eo.Token.AccessToken)
@@ -93,19 +102,25 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 		fmt.Println("Expiry:", eo.Token.Expiry)
 		fmt.Println("Now:", time.Now())
 
+		eoError := ApiError{}
+
+		err = json.Unmarshal(b, &eoError)
+		if err != nil {
+			return err
+		}
+
+		message := fmt.Sprintln("Error:", eoError.Error, ", ", eoError.Description)
+		fmt.Println(message)
+
 		if res.StatusCode == 401 {
 			if eo.IsLive {
-				sentry.CaptureMessage("ExactOnline refreshtoken not valid, login needed to retrieve a new one.")
+				sentry.CaptureMessage("ExactOnline refreshtoken not valid, login needed to retrieve a new one. Error: " + message)
 			}
 			eo.InitToken()
 		}
 
-		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v", res.StatusCode)}
+		return &types.ErrorString{fmt.Sprintf("Server returned statuscode %v, url: %s", res.StatusCode, req.URL)}
 	}
-
-	defer res.Body.Close()
-
-	b, err := ioutil.ReadAll(res.Body)
 
 	token := Token{}
 
