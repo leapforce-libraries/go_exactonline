@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	sentry "github.com/getsentry/sentry-go"
-
 	bigquerytools "github.com/Leapforce-nl/go_bigquerytools"
 	types "github.com/Leapforce-nl/go_types"
 )
@@ -283,9 +281,9 @@ func (eo *ExactOnline) PrintError(res *http.Response) error {
 
 	//fmt.Println(ee.Err.Message.Value)
 	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
-	if eo.IsLive {
+	/*if eo.IsLive {
 		sentry.CaptureMessage(message)
-	}
+	}*/
 	return &types.ErrorString{message}
 }
 
