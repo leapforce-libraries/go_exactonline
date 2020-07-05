@@ -11,6 +11,7 @@ import (
 // BigQueryGetRefreshToken get refreshtoken from BigQuery
 //
 func (eo *ExactOnline) GetTokenFromBigQuery() error {
+	fmt.Println("***GetTokenFromBigQuery***")
 	// create client
 	bqClient, err := eo.BigQuery.CreateClient()
 	if err != nil {

@@ -176,8 +176,12 @@ func (eo *ExactOnline) GetTokenFromCode(code string) error {
 }
 
 func (eo *ExactOnline) GetTokenFromRefreshToken() error {
-	//fmt.Println("GetTokenFromRefreshToken")
+	fmt.Println("***GetTokenFromRefreshToken***")
 	//fmt.Println(eo.Token.RefreshToken[0:20])
+
+	//always get refresh token from BQ prior to using it
+	eo.GetTokenFromBigQuery()
+
 	if !eo.Token.Refreshable() {
 		return &types.ErrorString{"Token is not valid."}
 	}
@@ -199,7 +203,7 @@ func (eo *ExactOnline) ValidateToken() error {
 	//}
 
 	if !eo.Token.Useable() {
-		if !eo.Token.Refreshable() {
+		/*if !eo.Token.Refreshable() {
 			err := eo.GetTokenFromBigQuery()
 			if err != nil {
 				return err
@@ -212,6 +216,11 @@ func (eo *ExactOnline) ValidateToken() error {
 			if err != nil {
 				return err
 			}
+		}*/
+
+		err := eo.GetTokenFromRefreshToken()
+		if err != nil {
+			return err
 		}
 
 		if !eo.Token.Useable() {
