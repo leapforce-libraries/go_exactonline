@@ -183,7 +183,11 @@ func (eo *ExactOnline) GetTokenFromRefreshToken() error {
 	eo.GetTokenFromBigQuery()
 
 	if !eo.Token.Refreshable() {
-		return &types.ErrorString{"Token is not valid."}
+		err := eo.InitToken()
+		if err != nil {
+			return err
+		}
+		//return &types.ErrorString{"Token is not valid."}
 	}
 	data := url.Values{}
 	data.Set("client_id", eo.ClientID)

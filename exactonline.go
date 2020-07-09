@@ -19,14 +19,14 @@ import (
 //
 type ExactOnline struct {
 	// config
-	ClientID        string
-	ClientSecret    string
-	RedirectURL     string
-	AuthURL         string
-	TokenURL        string
-	RefreshTokenKey string
-	ApiUrl          string
-	Division        int
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+	AuthURL      string
+	TokenURL     string
+	//RefreshTokenKey string
+	ApiUrl   string
+	Division int
 	// bigquery
 	BigQuery          *bigquerytools.BigQuery
 	BigQueryDataset   string
