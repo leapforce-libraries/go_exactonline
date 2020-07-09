@@ -24,7 +24,7 @@ func (eo *ExactOnline) GetTokenFromBigQuery() error {
 	ctx := context.Background()
 
 	//sql := "SELECT Value FROM `" + BIGQUERY_DATASET + "." + BIGQUERY_TABLENAME + "` WHERE key = '" + key + "'"
-	sql := "SELECT refreshtoken AS RefreshToken FROM `" + tableRefreshToken + "` WHERE key = '" + eo.ClientID + "'"
+	sql := "SELECT refreshtoken AS RefreshToken FROM `" + tableRefreshToken + "` WHERE client_id = '" + eo.ClientID + "'"
 
 	//fmt.Println(sql)
 
