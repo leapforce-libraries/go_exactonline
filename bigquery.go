@@ -8,11 +8,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-const tableRefreshToken string = "exact_online.refreshkeys"
-
-func (eo *ExactOnline) RefreshTokenKey() string {
-	return "refreshtoken_" + eo.ClientID
-}
+const tableRefreshToken string = "exact_online.tokens"
 
 // BigQueryGetRefreshToken get refreshtoken from BigQuery
 //
@@ -28,7 +24,7 @@ func (eo *ExactOnline) GetTokenFromBigQuery() error {
 	ctx := context.Background()
 
 	//sql := "SELECT Value FROM `" + BIGQUERY_DATASET + "." + BIGQUERY_TABLENAME + "` WHERE key = '" + key + "'"
-	sql := "SELECT Value AS RefreshToken FROM `" + tableRefreshToken + "` WHERE key = '" + eo.RefreshTokenKey() + "'"
+	sql := "SELECT refreshtoken AS RefreshToken FROM `" + tableRefreshToken + "` WHERE key = '" + eo.ClientID + "'"
 
 	//fmt.Println(sql)
 
@@ -88,14 +84,14 @@ func (eo *ExactOnline) SaveTokenToBigQuery() error {
 	ctx := context.Background()
 
 	sql := "MERGE `" + tableRefreshToken + "` AS TARGET " +
-		"USING  (select '" + eo.RefreshTokenKey() + "' AS key,'" + eo.Token.RefreshToken + "' AS value) AS SOURCE " +
-		" ON TARGET.key = SOURCE.key " +
+		"USING  (select '" + eo.ClientID + "' AS client_id,'" + eo.Token.RefreshToken + "' AS refreshtoken) AS SOURCE " +
+		" ON TARGET.client_id = SOURCE.client_id " +
 		"WHEN MATCHED THEN " +
 		"	UPDATE " +
-		"	SET value = SOURCE.value " +
+		"	SET refreshtoken = SOURCE.refreshtoken " +
 		"WHEN NOT MATCHED BY TARGET THEN " +
-		"	INSERT (key, value) " +
-		"	VALUES (SOURCE.key, SOURCE.value)"
+		"	INSERT (client_id, refreshtoken) " +
+		"	VALUES (SOURCE.client_id, SOURCE.refreshtoken)"
 
 	q := bqClient.Query(sql)
 
