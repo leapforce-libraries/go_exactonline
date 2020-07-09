@@ -8,6 +8,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
+const tableRefreshToken string = "exact_online.refreshkeys"
+
 func (eo *ExactOnline) RefreshTokenKey() string {
 	return "refreshtoken_" + eo.ClientID
 }
@@ -26,7 +28,7 @@ func (eo *ExactOnline) GetTokenFromBigQuery() error {
 	ctx := context.Background()
 
 	//sql := "SELECT Value FROM `" + BIGQUERY_DATASET + "." + BIGQUERY_TABLENAME + "` WHERE key = '" + key + "'"
-	sql := "SELECT Value AS RefreshToken FROM `" + eo.BigQueryDataset + "." + eo.BigQueryTablename + "` WHERE key = '" + eo.RefreshTokenKey() + "'"
+	sql := "SELECT Value AS RefreshToken FROM `" + tableRefreshToken + "` WHERE key = '" + eo.RefreshTokenKey() + "'"
 
 	//fmt.Println(sql)
 
@@ -85,7 +87,7 @@ func (eo *ExactOnline) SaveTokenToBigQuery() error {
 
 	ctx := context.Background()
 
-	sql := "MERGE `" + eo.BigQueryDataset + "." + eo.BigQueryTablename + "` AS TARGET " +
+	sql := "MERGE `" + tableRefreshToken + "` AS TARGET " +
 		"USING  (select '" + eo.RefreshTokenKey() + "' AS key,'" + eo.Token.RefreshToken + "' AS value) AS SOURCE " +
 		" ON TARGET.key = SOURCE.key " +
 		"WHEN MATCHED THEN " +
