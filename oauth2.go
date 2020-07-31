@@ -202,26 +202,7 @@ func (eo *ExactOnline) ValidateToken() error {
 	LockToken()
 	defer UnlockToken()
 
-	//if eo.Token == nil {
-	//	eo.Token = new(Token)
-	//}
-
 	if !eo.Token.Useable() {
-		/*if !eo.Token.Refreshable() {
-			err := eo.GetTokenFromBigQuery()
-			if err != nil {
-				return err
-			}
-			//fmt.Println(time.Now(), eo.Token.Expiry, "[from bq]", eo.Token.AccessToken, eo.Token.RefreshToken)
-		}
-
-		if eo.Token.Refreshable() {
-			err := eo.GetTokenFromRefreshToken()
-			if err != nil {
-				return err
-			}
-		}*/
-
 		err := eo.GetTokenFromRefreshToken()
 		if err != nil {
 			return err

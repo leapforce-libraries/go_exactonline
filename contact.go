@@ -14,6 +14,7 @@ type Contact struct {
 	ID            types.GUID `json:"ID"`
 	Account       types.GUID `json:"Account"`
 	Initials      string     `json:"Initials"`
+	BirthName     string     `json:"BirthName"`
 	FirstName     string     `json:"FirstName"`
 	LastName      string     `json:"LastName"`
 	Gender        string     `json:"Gender"`
@@ -31,6 +32,7 @@ func (c *Contact) SaveValues(inserted bool) {
 	if !inserted {
 		oldContact = new(Contact)
 		oldContact.Initials = c.Initials
+		oldContact.BirthName = c.BirthName
 		oldContact.FirstName = c.FirstName
 		oldContact.LastName = c.LastName
 		oldContact.Gender = c.Gender
@@ -57,6 +59,7 @@ func (c *Contact) Values() (string, string) {
 
 	if oldContact != nil {
 		oldContact.Initials = strings.Trim(oldContact.Initials, " ")
+		oldContact.BirthName = strings.Trim(oldContact.BirthName, " ")
 		oldContact.FirstName = strings.Trim(oldContact.FirstName, " ")
 		oldContact.LastName = strings.Trim(oldContact.LastName, " ")
 		oldContact.Gender = strings.Trim(oldContact.Gender, " ")
@@ -64,6 +67,7 @@ func (c *Contact) Values() (string, string) {
 	}
 
 	c.Initials = strings.Trim(c.Initials, " ")
+	c.BirthName = strings.Trim(c.BirthName, " ")
 	c.FirstName = strings.Trim(c.FirstName, " ")
 	c.LastName = strings.Trim(c.LastName, " ")
 	c.Gender = strings.Trim(c.Gender, " ")
@@ -74,6 +78,13 @@ func (c *Contact) Values() (string, string) {
 	} else if oldContact.Initials != c.Initials {
 		old += ",Initials:" + oldContact.Initials
 		new += ",Initials:" + c.Initials
+	}
+
+	if oldContact == nil {
+		new += ",BirthName:" + c.BirthName
+	} else if oldContact.BirthName != c.BirthName {
+		old += ",BirthName:" + oldContact.BirthName
+		new += ",BirthName:" + c.BirthName
 	}
 
 	if oldContact == nil {
@@ -153,8 +164,8 @@ func (eo *ExactOnline) GetContacts() error {
 	return nil
 }
 
-func (eo *ExactOnline) GetContactsByEmail(email string) ([]Contact, error) {
-	filter := fmt.Sprintf("Email eq '%s'", email)
+func (eo *ExactOnline) GetContactsByEmail(account string, email string) ([]Contact, error) {
+	filter := fmt.Sprintf("Account eq guid'%s' and Email eq '%s'", account, email)
 	contacts := []Contact{}
 
 	co, err := eo.GetContactsInternal(filter)
@@ -168,11 +179,27 @@ func (eo *ExactOnline) GetContactsByEmail(email string) ([]Contact, error) {
 	return contacts, nil
 }
 
+func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([]Contact, error) {
+	filter := fmt.Sprintf("Account eq guid'%s' and FullName eq '%s'", account, fullname)
+	contacts := []Contact{}
+
+	co, err := eo.GetContactsInternal(filter)
+	if err != nil {
+		return contacts, nil
+	}
+	contacts = *co
+
+	//fmt.Println("GetContactsByFullName:", email, "len:", len(contacts))
+
+	return contacts, nil
+}
+
 func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	urlStr := fmt.Sprintf("%s%s/crm/Contacts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), c.ID.String())
 
 	data := make(map[string]string)
 	data["Initials"] = c.Initials
+	data["BirthName"] = c.BirthName
 	data["FirstName"] = c.FirstName
 	data["LastName"] = c.LastName
 	data["Gender"] = c.Gender
@@ -199,6 +226,7 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 	data := make(map[string]string)
 	data["Account"] = c.Account.String()
 	data["Initials"] = c.Initials
+	data["BirthName"] = c.BirthName
 	data["FirstName"] = c.FirstName
 	data["LastName"] = c.LastName
 	data["Gender"] = c.Gender
