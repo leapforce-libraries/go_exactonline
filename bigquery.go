@@ -8,7 +8,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-const tableRefreshToken string = "exact_online.tokens"
+const tableRefreshToken string = "leapforce.refreshtokens"
+const api string = "ExactOnline"
 
 // BigQueryGetRefreshToken get refreshtoken from BigQuery
 //
@@ -24,7 +25,8 @@ func (eo *ExactOnline) GetTokenFromBigQuery() error {
 	ctx := context.Background()
 
 	//sql := "SELECT Value FROM `" + BIGQUERY_DATASET + "." + BIGQUERY_TABLENAME + "` WHERE key = '" + key + "'"
-	sql := "SELECT refreshtoken AS RefreshToken FROM `" + tableRefreshToken + "` WHERE client_id = '" + eo.ClientID + "'"
+	//sql := "SELECT refreshtoken AS RefreshToken FROM `" + tableRefreshToken + "` WHERE client_id = '" + eo.ClientID + "'"
+	sql := fmt.Sprintf("SELECT refreshtoken AS RefreshToken FROM `%s` WHERE api = '%s' AND client_id = '%s'", tableRefreshToken, api, eo.ClientID)
 
 	//fmt.Println(sql)
 
@@ -84,14 +86,15 @@ func (eo *ExactOnline) SaveTokenToBigQuery() error {
 	ctx := context.Background()
 
 	sql := "MERGE `" + tableRefreshToken + "` AS TARGET " +
-		"USING  (select '" + eo.ClientID + "' AS client_id,'" + eo.Token.RefreshToken + "' AS refreshtoken) AS SOURCE " +
-		" ON TARGET.client_id = SOURCE.client_id " +
+		"USING  (SELECT '" + api + "' AS api,'" + eo.ClientID + "' AS client_id,'" + eo.Token.RefreshToken + "' AS refreshtoken) AS SOURCE " +
+		" ON TARGET.api = SOURCE.api " +
+		" AND TARGET.client_id = SOURCE.client_id " +
 		"WHEN MATCHED THEN " +
 		"	UPDATE " +
 		"	SET refreshtoken = SOURCE.refreshtoken " +
 		"WHEN NOT MATCHED BY TARGET THEN " +
-		"	INSERT (client_id, refreshtoken) " +
-		"	VALUES (SOURCE.client_id, SOURCE.refreshtoken)"
+		"	INSERT (api, client_id, refreshtoken) " +
+		"	VALUES (SOURCE.api, SOURCE.client_id, SOURCE.refreshtoken)"
 
 	q := bqClient.Query(sql)
 
