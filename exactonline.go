@@ -48,6 +48,7 @@ type ExactOnline struct {
 	// rate limit
 	XRateLimitMinutelyRemaining int
 	XRateLimitMinutelyReset     int64
+	RequestCount                int64
 	IsLive                      bool
 }
 
@@ -66,6 +67,8 @@ func (eo *ExactOnline) Init() error {
 	if !strings.HasSuffix(eo.ApiUrl, "/") {
 		eo.ApiUrl = eo.ApiUrl + "/"
 	}
+
+	eo.RequestCount = 0
 
 	return nil
 }
@@ -215,6 +218,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 	req.Header.Set("Accept", "application/json")
 
 	// Send out the HTTP request
+	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
 	if err != nil {
@@ -307,6 +311,7 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send out the HTTP request
+	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
 	if err != nil {
@@ -361,6 +366,7 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send out the HTTP request
+	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
 	if err != nil {
@@ -424,6 +430,7 @@ func (eo *ExactOnline) Delete(url string) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Send out the HTTP request
+	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
 	if err != nil {
