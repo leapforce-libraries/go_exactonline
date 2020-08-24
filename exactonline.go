@@ -221,9 +221,6 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
-	if err != nil {
-		return "", err
-	}
 
 	eo.ReadRateLimitHeaders(res)
 
@@ -234,6 +231,9 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return "", eo.PrintError(res)
+	}
+	if err != nil {
+		return "", err
 	}
 
 	defer res.Body.Close()
@@ -314,9 +314,6 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
-	if err != nil {
-		return err
-	}
 
 	eo.ReadRateLimitHeaders(res)
 
@@ -327,6 +324,9 @@ func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
 		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
+	}
+	if err != nil {
+		return err
 	}
 
 	//fmt.Println(res)
@@ -369,10 +369,6 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
-	if err != nil {
-		fmt.Println("errDo")
-		return err
-	}
 
 	eo.ReadRateLimitHeaders(res)
 
@@ -383,6 +379,10 @@ func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface
 		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
 		return eo.PrintError(res)
+	}
+	if err != nil {
+		fmt.Println("errDo")
+		return err
 	}
 
 	defer res.Body.Close()
@@ -433,10 +433,6 @@ func (eo *ExactOnline) Delete(url string) error {
 	eo.RequestCount++
 	res, err := client.Do(req)
 	UnlockToken()
-	if err != nil {
-		fmt.Println("errDo")
-		return err
-	}
 
 	eo.ReadRateLimitHeaders(res)
 
@@ -446,6 +442,9 @@ func (eo *ExactOnline) Delete(url string) error {
 		fmt.Println(url)
 		fmt.Println("StatusCode", res.StatusCode)
 		fmt.Println(eo.Token.AccessToken)
+		return err
+	}
+	if err != nil {
 		return err
 	}
 
