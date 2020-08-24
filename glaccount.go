@@ -54,7 +54,7 @@ type GLAccount struct {
 
 func (eo *ExactOnline) GetGLAccountsInternal(filter string) (*[]GLAccount, error) {
 	selectFields := GetJsonTaggedFieldNames(GLAccount{})
-	urlStr := fmt.Sprintf("%s%s/financial/GLAccounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	urlStr := fmt.Sprintf("%s%s/bulk/financial/GLAccounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
