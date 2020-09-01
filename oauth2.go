@@ -105,12 +105,12 @@ func (eo *ExactOnline) GetToken(data url.Values) error {
 		eoError := ApiError{}
 
 		err = json.Unmarshal(b, &eoError)
-		if err != nil {
-			return err
+		message := ""
+		if err == nil {
+			message = fmt.Sprintln("Error:", eoError.Error, ", ", eoError.Description)
+			fmt.Println(message)
+			//return err
 		}
-
-		message := fmt.Sprintln("Error:", eoError.Error, ", ", eoError.Description)
-		fmt.Println(message)
 
 		if res.StatusCode == 401 {
 			if eo.IsLive {
