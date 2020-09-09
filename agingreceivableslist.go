@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utils "github.com/Leapforce-nl/go_utilities"
 )
 
 // AgingReceivablesList stores AgingReceivablesList from exactonline
@@ -30,7 +31,7 @@ type AgingReceivablesList struct {
 }
 
 func (eo *ExactOnline) GetAgingReceivablesListsInternal(filter string) (*[]AgingReceivablesList, error) {
-	selectFields := GetJsonTaggedFieldNames(AgingReceivablesList{})
+	selectFields := utils.GetJsonTaggedFieldNames("json", AgingReceivablesList{})
 	urlStr := fmt.Sprintf("%s%s/read/financial/AgingReceivablesList?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
