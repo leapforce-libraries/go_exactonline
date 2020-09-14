@@ -82,6 +82,8 @@ github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914163053-7c8ba05afba2 h1:CImklQZY
 github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914163053-7c8ba05afba2/go.mod h1:lI1cb81JE9c5oyOQrWINwm1qCLowa9/bCT/m/GKwU/M=
 github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914184636-1ee9c05d776e h1:bvkdUM4baLS5MX5GmmpnsWaQjjImjWAl4JavLvlJ3tQ=
 github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914184636-1ee9c05d776e/go.mod h1:lI1cb81JE9c5oyOQrWINwm1qCLowa9/bCT/m/GKwU/M=
+github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914201226-20df2945af46 h1:JBzxS1f1KP9dLzDTMvvLIa3LgDhuWqtDLtrqXhEm5BQ=
+github.com/Leapforce-nl/go_oauth2 v0.0.0-20200914201226-20df2945af46/go.mod h1:lI1cb81JE9c5oyOQrWINwm1qCLowa9/bCT/m/GKwU/M=
 github.com/Leapforce-nl/go_types v0.0.0-20200122233829-e541676b96f4/go.mod h1:ysihm2IbP8GMlJqPA47B5CT59bXb+7QzmMJSGCSKTR0=
 github.com/Leapforce-nl/go_types v0.0.0-20200126202922-ba4900de15b8 h1:q0/mdn+TnZqBB439lOeuLPHPnQaVYCQL2B4BRLbCbuQ=
 github.com/Leapforce-nl/go_types v0.0.0-20200126202922-ba4900de15b8/go.mod h1:AuUJ0pyk3Xc6IgEuzCr5NvEl277YQwiIgJ12/SfmByI=
