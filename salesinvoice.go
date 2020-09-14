@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // SalesInvoice stores SalesInvoice from exactonline
@@ -82,8 +82,8 @@ type SalesInvoice struct {
 }
 
 func (eo *ExactOnline) GetSalesInvoicesInternal(filter string) (*[]SalesInvoice, error) {
-	selectFields := GetJsonTaggedFieldNames(SalesInvoice{})
-	urlStr := fmt.Sprintf("%s%s/bulk/SalesInvoice/SalesInvoices?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", SalesInvoice{})
+	urlStr := fmt.Sprintf("%s/bulk/SalesInvoice/SalesInvoices?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

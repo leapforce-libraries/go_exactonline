@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // TimeTransaction stores TimeTransaction from exactonline
@@ -56,8 +56,8 @@ type TimeTransaction struct {
 }
 
 func (eo *ExactOnline) GetTimeTransactionsInternal(filter string) (*[]TimeTransaction, error) {
-	selectFields := GetJsonTaggedFieldNames(TimeTransaction{})
-	urlStr := fmt.Sprintf("%s%s/project/TimeTransactions?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", TimeTransaction{})
+	urlStr := fmt.Sprintf("%s/project/TimeTransactions?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

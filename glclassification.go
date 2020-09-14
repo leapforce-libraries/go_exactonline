@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // GLClassification stores GLClassification from exactonline
@@ -34,8 +34,8 @@ type GLClassification struct {
 }
 
 func (eo *ExactOnline) GetGLClassificationsInternal(filter string) (*[]GLClassification, error) {
-	selectFields := GetJsonTaggedFieldNames(GLClassification{})
-	urlStr := fmt.Sprintf("%s%s/bulk/financial/GLClassifications?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", GLClassification{})
+	urlStr := fmt.Sprintf("%s/bulk/financial/GLClassifications?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

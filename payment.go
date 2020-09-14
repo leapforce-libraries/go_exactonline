@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Payment stores Payment from exactonline
@@ -81,8 +81,8 @@ type Payment struct {
 }
 
 func (eo *ExactOnline) GetPaymentsInternal(filter string) (*[]Payment, error) {
-	selectFields := GetJsonTaggedFieldNames(Payment{})
-	urlStr := fmt.Sprintf("%s%s/cashflow/Payments?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Payment{})
+	urlStr := fmt.Sprintf("%s/cashflow/Payments?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

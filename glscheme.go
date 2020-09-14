@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // GLScheme stores GLScheme from exactonline
@@ -25,8 +25,8 @@ type GLScheme struct {
 }
 
 func (eo *ExactOnline) GetGLSchemesInternal(filter string) (*[]GLScheme, error) {
-	selectFields := GetJsonTaggedFieldNames(GLScheme{})
-	urlStr := fmt.Sprintf("%s%s/financial/GLSchemes?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", GLScheme{})
+	urlStr := fmt.Sprintf("%s/financial/GLSchemes?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

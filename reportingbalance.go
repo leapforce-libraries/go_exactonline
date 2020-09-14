@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // ReportingBalance stores ReportingBalance from exactonline
@@ -31,8 +31,8 @@ type ReportingBalance struct {
 }
 
 func (eo *ExactOnline) GetReportingBalancesInternal(filter string) (*[]ReportingBalance, error) {
-	selectFields := GetJsonTaggedFieldNames(ReportingBalance{})
-	urlStr := fmt.Sprintf("%s%s/financial/ReportingBalance?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", ReportingBalance{})
+	urlStr := fmt.Sprintf("%s/financial/ReportingBalance?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

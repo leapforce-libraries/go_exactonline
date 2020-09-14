@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // GLAccountClassificationMapping stores GLAccountClassificationMapping from exactonline
@@ -24,8 +24,8 @@ type GLAccountClassificationMapping struct {
 }
 
 func (eo *ExactOnline) GetGLAccountClassificationMappingsInternal(filter string) (*[]GLAccountClassificationMapping, error) {
-	selectFields := GetJsonTaggedFieldNames(GLAccountClassificationMapping{})
-	urlStr := fmt.Sprintf("%s%s/financial/GLAccountClassificationMappings?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", GLAccountClassificationMapping{})
+	urlStr := fmt.Sprintf("%s/financial/GLAccountClassificationMappings?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

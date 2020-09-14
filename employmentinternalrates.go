@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // EmploymentInternalRate stores EmploymentInternalRate from exactonline
@@ -29,8 +29,8 @@ type EmploymentInternalRate struct {
 }
 
 func (eo *ExactOnline) GetEmploymentInternalRatesInternal(filter string) (*[]EmploymentInternalRate, error) {
-	selectFields := GetJsonTaggedFieldNames(EmploymentInternalRate{})
-	urlStr := fmt.Sprintf("%s%s/project/EmploymentInternalRates?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", EmploymentInternalRate{})
+	urlStr := fmt.Sprintf("%s/project/EmploymentInternalRates?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

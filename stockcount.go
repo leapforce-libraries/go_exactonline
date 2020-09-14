@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // StockCount stores StockCount from exactonline
@@ -34,8 +34,8 @@ type StockCount struct {
 }
 
 func (eo *ExactOnline) GetStockCountsInternal(filter string) (*[]StockCount, error) {
-	selectFields := GetJsonTaggedFieldNames(StockCount{})
-	urlStr := fmt.Sprintf("%s%s/inventory/StockCounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", StockCount{})
+	urlStr := fmt.Sprintf("%s/inventory/StockCounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

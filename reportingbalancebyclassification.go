@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // ReportingBalanceByClassification stores ReportingBalanceByClassification from exactonline
@@ -34,8 +35,8 @@ type ReportingBalanceByClassification struct {
 }
 
 func (eo *ExactOnline) GetReportingBalanceByClassificationsInternal(glScheme GLScheme, reportingYear int, filter string) (*[]ReportingBalanceByClassification, error) {
-	selectFields := GetJsonTaggedFieldNames(ReportingBalanceByClassification{})
-	urlStr := fmt.Sprintf("%s%s/read/financial/ReportingBalanceByClassification?glScheme=guid'%s'&reportingYear=%s&$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), glScheme.ID.String(), strconv.Itoa(reportingYear), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", ReportingBalanceByClassification{})
+	urlStr := fmt.Sprintf("%s/read/financial/ReportingBalanceByClassification?glScheme=guid'%s'&reportingYear=%s&$select=%s", eo.baseURL(), glScheme.ID.String(), strconv.Itoa(reportingYear), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

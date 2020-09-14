@@ -2,7 +2,6 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 )
 
 // Division stores division from exactonline
@@ -12,7 +11,7 @@ type Division struct {
 }
 
 func (eo *ExactOnline) GetDivisions() error {
-	urlStr := fmt.Sprintf("%s%s/hrm/Divisions", eo.ApiUrl, strconv.Itoa(eo.Division))
+	urlStr := fmt.Sprintf("%s/hrm/Divisions", eo.baseURL())
 
 	eo.Divisions = []Division{}
 

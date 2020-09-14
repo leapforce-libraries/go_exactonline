@@ -3,11 +3,11 @@ package exactonline
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // SubscriptionLine stores SubscriptionLine from exactonline
@@ -133,8 +133,8 @@ func (s *SubscriptionLine) Values(deleted bool) (string, string) {
 }
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
-	selectFields := GetJsonTaggedFieldNames(SubscriptionLine{})
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", SubscriptionLine{})
+	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -198,7 +198,7 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.ID.String())
+	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines(guid'%s')", eo.baseURL(), s.ID.String())
 
 	/*sd := new(types.Date)
 	if !s.StartDate.IsZero() {
@@ -243,7 +243,7 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
 		return nil
 	}
 
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines", eo.ApiUrl, strconv.Itoa(eo.Division))
+	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines", eo.baseURL())
 
 	sli := SubscriptionLineInsert{}
 	sli.EntryID = sl.EntryID
@@ -288,7 +288,7 @@ func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
 		return nil
 	}
 
-	urlStr := fmt.Sprintf("%s%s/subscription/SubscriptionLines(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), sl.ID.String())
+	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines(guid'%s')", eo.baseURL(), sl.ID.String())
 
 	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.ID)
 

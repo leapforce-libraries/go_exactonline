@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Project stores Project from exactonline
@@ -63,8 +63,8 @@ type Project struct {
 }
 
 func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
-	selectFields := GetJsonTaggedFieldNames(Project{})
-	urlStr := fmt.Sprintf("%s%s/project/Projects?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Project{})
+	urlStr := fmt.Sprintf("%s/project/Projects?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

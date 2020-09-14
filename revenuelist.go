@@ -2,7 +2,8 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
+
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // RevenueList stores RevenueList from exactonline
@@ -14,8 +15,8 @@ type RevenueList struct {
 }
 
 func (eo *ExactOnline) GetRevenueListsInternal(filter string) (*[]RevenueList, error) {
-	selectFields := GetJsonTaggedFieldNames(RevenueList{})
-	urlStr := fmt.Sprintf("%s%s/read/financial/RevenueList?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", RevenueList{})
+	urlStr := fmt.Sprintf("%s/read/financial/RevenueList?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

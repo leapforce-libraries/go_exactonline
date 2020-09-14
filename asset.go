@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Asset stores Asset from exactonline
@@ -66,8 +66,8 @@ type Asset struct {
 }
 
 func (eo *ExactOnline) GetAssetsInternal(filter string) (*[]Asset, error) {
-	selectFields := GetJsonTaggedFieldNames(Asset{})
-	urlStr := fmt.Sprintf("%s%s/assets/Assets?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Asset{})
+	urlStr := fmt.Sprintf("%s/assets/Assets?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

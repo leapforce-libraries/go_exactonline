@@ -8,6 +8,7 @@ import (
 	"time"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Subscription stores Subscription from exactonline
@@ -202,8 +203,8 @@ func (eo *ExactOnline) CancellationDate(endDate *types.Date) *types.Date {
 }
 
 func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription, error) {
-	selectFields := GetJsonTaggedFieldNames(Subscription{})
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Subscription{})
+	urlStr := fmt.Sprintf("%s/subscription/Subscriptions?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -271,7 +272,7 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) error {
 		return nil
 	}
 
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
+	urlStr := fmt.Sprintf("%s/subscription/Subscriptions(guid'%s')", eo.baseURL(), s.EntryID.String())
 
 	su := SubscriptionUpdate{
 		s.SubscriptionType,
@@ -308,7 +309,7 @@ func (eo *ExactOnline) InsertSubscription(s *Subscription) error {
 		return nil
 	}
 
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions", eo.ApiUrl, strconv.Itoa(eo.Division))
+	urlStr := fmt.Sprintf("%s/subscription/Subscriptions", eo.baseURL())
 
 	si := SubscriptionInsert{}
 	si.EntryID = s.EntryID
@@ -362,7 +363,7 @@ func (eo *ExactOnline) DeleteSubscription(s *Subscription) error {
 		return nil
 	}
 
-	urlStr := fmt.Sprintf("%s%s/subscription/Subscriptions(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), s.EntryID.String())
+	urlStr := fmt.Sprintf("%s/subscription/Subscriptions(guid'%s')", eo.baseURL(), s.EntryID.String())
 
 	err := eo.Delete(urlStr)
 	if err != nil {

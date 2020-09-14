@@ -6,71 +6,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	bigquerytools "github.com/Leapforce-nl/go_bigquerytools"
-	oauth2 "github.com/Leapforce-nl/go_oauth2"
 	types "github.com/Leapforce-nl/go_types"
 )
 
-const (
-	apiName         string = "ExactOnline"
-	apiURL          string = "https://start.exactonline.nl/api/v1"
-	authURL         string = "https://start.exactonline.nl/api/oauth2/auth"
-	tokenURL        string = "https://start.exactonline.nl/api/oauth2/token"
-	tokenHttpMethod string = http.MethodPost
-	redirectURL     string = "http://localhost:8080/oauth/redirect"
-)
-
-// ExactOnline stores ExactOnline configuration
-//
-type ExactOnline struct {
-	_division int
-	oAuth2    *oauth2.OAuth2
-
-	// data
-	Contacts          []Contact
-	Accounts          []Account
-	SubscriptionTypes []SubscriptionType
-	Subscriptions     []Subscription
-	SubscriptionLines []SubscriptionLine
-	Divisions         []Division
-	Items             []Item
-	//Token             *Token
-
-	// rate limit
-	XRateLimitMinutelyRemaining int
-	XRateLimitMinutelyReset     int64
-	RequestCount                int64
-	//IsLive                      bool
-}
-
-// methods
-//
-func NewExactOnline(division int, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
-	eo := ExactOnline{}
-	eo._division = division
-
-	eo.RequestCount = 0
-
-	eo.oAuth2 = oauth2.NewOAuth(apiName, clientID, clientSecret, scope, redirectURL, authURL, tokenURL, tokenHttpMethod, bigQuery, isLive)
-	return &eo, nil
-}
-
-func (eo *ExactOnline) baseURL() string {
-	return fmt.Sprintf("%s/%v", apiURL, eo._division)
-}
-
-func (eo *ExactOnline) ValidateToken() error {
-	return eo.oAuth2.ValidateToken()
-}
-
-func (eo *ExactOnline) InitToken() error {
-	return eo.oAuth2.InitToken()
-}
-
-/*
 // ExactOnline stores exactonline configuration
 //
 type ExactOnline struct {
@@ -109,14 +53,16 @@ type ExactOnline struct {
 }
 
 type callbackFunction func()
-*/
+
 // methods
 //
-/*
 func (eo *ExactOnline) Init() error {
 	if eo.ApiUrl == "" {
 		return &types.ErrorString{"ExactOnline ApiUrl not provided"}
 	}
+	/*if eo.Token == nil {
+		return &errorString{"ExactOnline Token not provided"}
+	}*/
 
 	if !strings.HasSuffix(eo.ApiUrl, "/") {
 		eo.ApiUrl = eo.ApiUrl + "/"
@@ -125,9 +71,8 @@ func (eo *ExactOnline) Init() error {
 	eo.RequestCount = 0
 
 	return nil
-}*/
+}
 
-/*
 // GetJsonTaggedFieldNames returns comma separated string of
 // fieldnames of struct having a json tag
 //
@@ -145,7 +90,7 @@ func GetJsonTaggedFieldNames(model interface{}) string {
 	list = strings.Trim(list, ",")
 
 	return list
-}*/
+}
 
 // Response represents highest level of exactonline api response
 //
@@ -252,6 +197,75 @@ func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	}
 }
 
+func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
+	client, errClient := eo.GetHttpClient()
+	if errClient != nil {
+		return "", errClient
+	}
+
+	//fmt.Println(url)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	LockToken()
+
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
+	req.Header.Set("Accept", "application/json")
+
+	// Send out the HTTP request
+	eo.RequestCount++
+	res, err := client.Do(req)
+	UnlockToken()
+
+	eo.ReadRateLimitHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Get")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
+		fmt.Println(eo.Token.AccessToken)
+		return "", eo.PrintError(res)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+
+	response := Response{}
+
+	errr := json.Unmarshal(b, &response)
+	if errr != nil {
+		return "", err
+	}
+
+	errrr := json.Unmarshal(response.Data.Results, &model)
+	if errrr != nil {
+		return "", errrr
+	}
+
+	return response.Data.Next, nil
+}
+
+func (eo *ExactOnline) Put(url string, values map[string]string) error {
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(values)
+
+	return eo.PutBuffer(url, buf)
+}
+
+func (eo *ExactOnline) PutBytes(url string, b []byte) error {
+	return eo.PutBuffer(url, bytes.NewBuffer(b))
+}
+
 func (eo *ExactOnline) PrintError(res *http.Response) error {
 	fmt.Println("Status", res.Status)
 
@@ -271,83 +285,124 @@ func (eo *ExactOnline) PrintError(res *http.Response) error {
 
 	//fmt.Println(ee.Err.Message.Value)
 	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
+	/*if eo.IsLive {
+		sentry.CaptureMessage(message)
+	}*/
 	return &types.ErrorString{message}
 }
 
-func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
-	err := eo.Wait()
-	if err != nil {
-		return "", err
+func (eo *ExactOnline) PutBuffer(url string, buf *bytes.Buffer) error {
+	client, errClient := eo.GetHttpClient()
+	if errClient != nil {
+		return errClient
 	}
 
-	eo.RequestCount++
-
-	response := Response{}
-	res, err := eo.oAuth2.Get(url, &response)
-	if err != nil {
-		return "", err
-	}
-
-	eo.ReadRateLimitHeaders(res)
-
-	err = json.Unmarshal(response.Data.Results, &model)
-	if err != nil {
-		return "", err
-	}
-
-	return response.Data.Next, nil
-}
-
-func (eo *ExactOnline) PutValues(url string, values map[string]string) error {
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(values)
-
-	return eo.Put(url, buf)
-}
-
-func (eo *ExactOnline) PutBytes(url string, b []byte) error {
-	return eo.Put(url, bytes.NewBuffer(b))
-}
-
-func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) error {
-	eo.RequestCount++
-
-	res, err := eo.oAuth2.Put(url, buf, nil)
+	req, err := http.NewRequest(http.MethodPut, url, buf)
 	if err != nil {
 		return err
 	}
 
+	LockToken()
+
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send out the HTTP request
+	eo.RequestCount++
+	res, err := client.Do(req)
+	UnlockToken()
+
 	eo.ReadRateLimitHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Put")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
+		fmt.Println(eo.Token.AccessToken)
+		return eo.PrintError(res)
+	}
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println(res)
 
 	return nil
 }
 
-func (eo *ExactOnline) PostValues(url string, values map[string]string, model interface{}) error {
+func (eo *ExactOnline) Post(url string, values map[string]string, model interface{}) error {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(values)
 
-	return eo.Post(url, buf, model)
+	return eo.PostBuffer(url, buf, model)
 }
 
 func (eo *ExactOnline) PostBytes(url string, b []byte, model interface{}) error {
-	return eo.Post(url, bytes.NewBuffer(b), model)
+	return eo.PostBuffer(url, bytes.NewBuffer(b), model)
 }
 
-func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) error {
-	eo.RequestCount++
+func (eo *ExactOnline) PostBuffer(url string, buf *bytes.Buffer, model interface{}) error {
+	client, errClient := eo.GetHttpClient()
+	if errClient != nil {
+		return errClient
+	}
 
-	response := ResponseSingle{}
-	res, err := eo.oAuth2.Post(url, buf, &response)
+	req, err := http.NewRequest(http.MethodPost, url, buf)
+	if err != nil {
+		fmt.Println("errNewRequest")
+		return err
+	}
+
+	LockToken()
+
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send out the HTTP request
+	eo.RequestCount++
+	res, err := client.Do(req)
+	UnlockToken()
+
+	eo.ReadRateLimitHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Post")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
+		fmt.Println(eo.Token.AccessToken)
+		return eo.PrintError(res)
+	}
+	if err != nil {
+		fmt.Println("errDo")
+		return err
+	}
+
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
 
-	eo.ReadRateLimitHeaders(res)
+	response := ResponseSingle{}
 
-	defer res.Body.Close()
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		fmt.Println("errUnmarshal1")
+		return eo.PrintError(res)
+	}
 
 	err = json.Unmarshal(response.Data, &model)
 	if err != nil {
+		fmt.Println("errUnmarshal2")
 		return err
 	}
 
@@ -355,14 +410,45 @@ func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) er
 }
 
 func (eo *ExactOnline) Delete(url string) error {
-	eo.RequestCount++
-
-	res, err := eo.oAuth2.Delete(url)
+	client, err := eo.GetHttpClient()
 	if err != nil {
 		return err
 	}
 
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		fmt.Println("errNewRequest")
+		return err
+	}
+
+	LockToken()
+
+	// Add authorization token to header
+	var bearer = "Bearer " + eo.Token.AccessToken
+	req.Header.Add("authorization", bearer)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send out the HTTP request
+	eo.RequestCount++
+	res, err := client.Do(req)
+	UnlockToken()
+
 	eo.ReadRateLimitHeaders(res)
+
+	// Check HTTP StatusCode
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		fmt.Println("ERROR in Delete")
+		fmt.Println(url)
+		fmt.Println("StatusCode", res.StatusCode)
+		fmt.Println(eo.Token.AccessToken)
+		return err
+	}
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
 
 	return nil
 }

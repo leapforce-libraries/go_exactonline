@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // TransactionLine stores TransactionLine from exactonline
@@ -80,8 +80,8 @@ type TransactionLine struct {
 }
 
 func (eo *ExactOnline) GetTransactionLinesInternal(filter string) (*[]TransactionLine, error) {
-	selectFields := GetJsonTaggedFieldNames(TransactionLine{})
-	urlStr := fmt.Sprintf("%s%s/bulk/financial/TransactionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", TransactionLine{})
+	urlStr := fmt.Sprintf("%s/bulk/financial/TransactionLines?$select=%s", eo.baseURL(), selectFields)
 	//urlStr := fmt.Sprintf("%s%s/financialtransaction/TransactionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)

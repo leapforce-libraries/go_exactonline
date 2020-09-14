@@ -2,10 +2,10 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Account stores account from exactonline
@@ -187,8 +187,8 @@ func (a *Account) Values() (string, string) {
 }
 
 func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {
-	selectFields := GetJsonTaggedFieldNames(Account{})
-	urlStr := fmt.Sprintf("%s%s/crm/Accounts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Account{})
+	urlStr := fmt.Sprintf("%s/crm/Accounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -238,7 +238,7 @@ func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) (
 }
 
 func (eo *ExactOnline) UpdateAccount(a *Account) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Accounts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), a.ID.String())
+	urlStr := fmt.Sprintf("%s/crm/Accounts(guid'%s')", eo.baseURL(), a.ID.String())
 
 	data := make(map[string]string)
 	data["Name"] = a.Name
@@ -255,7 +255,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	err := eo.Put(urlStr, data)
+	err := eo.PutValues(urlStr, data)
 	if err != nil {
 		fmt.Println("ERROR in UpdateAccount:", err)
 		fmt.Println("url:", urlStr)
@@ -271,12 +271,12 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 }
 
 func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Accounts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), a.ID.String())
+	urlStr := fmt.Sprintf("%s/crm/Accounts(guid'%s')", eo.baseURL(), a.ID.String())
 
 	data := make(map[string]string)
 	data["MainContact"] = a.MainContact.String()
 
-	err := eo.Put(urlStr, data)
+	err := eo.PutValues(urlStr, data)
 	if err != nil {
 		fmt.Println("ERROR in UpdateAccountMainContact:", err)
 		fmt.Println("url:", urlStr)
@@ -292,7 +292,7 @@ func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
 }
 
 func (eo *ExactOnline) InsertAccount(a *Account) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Accounts", eo.ApiUrl, strconv.Itoa(eo.Division))
+	urlStr := fmt.Sprintf("%s/crm/Accounts", eo.baseURL())
 
 	data := make(map[string]string)
 	data["Name"] = a.Name
@@ -310,7 +310,7 @@ func (eo *ExactOnline) InsertAccount(a *Account) error {
 	//fmt.Println(urlStr)
 	ac := Account{}
 
-	err := eo.Post(urlStr, data, &ac)
+	err := eo.PostValues(urlStr, data, &ac)
 	if err != nil {
 		fmt.Println("ERROR in InsertAccount:", err)
 		fmt.Println("url:", urlStr)

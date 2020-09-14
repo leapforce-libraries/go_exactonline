@@ -2,10 +2,10 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Contact stores Contact from exactonline
@@ -129,8 +129,8 @@ func (c *Contact) Values() (string, string) {
 }
 
 func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {
-	selectFields := GetJsonTaggedFieldNames(Contact{})
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Contact{})
+	urlStr := fmt.Sprintf("%s/crm/Contacts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
@@ -195,7 +195,7 @@ func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([
 }
 
 func (eo *ExactOnline) UpdateContact(c *Contact) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts(guid'%s')", eo.ApiUrl, strconv.Itoa(eo.Division), c.ID.String())
+	urlStr := fmt.Sprintf("%s/crm/Contacts(guid'%s')", eo.baseURL(), c.ID.String())
 
 	data := make(map[string]string)
 	data["Initials"] = c.Initials
@@ -206,7 +206,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	data["Title"] = c.Title
 	data["Email"] = c.Email
 
-	err := eo.Put(urlStr, data)
+	err := eo.PutValues(urlStr, data)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 }
 
 func (eo *ExactOnline) InsertContact(c *Contact) error {
-	urlStr := fmt.Sprintf("%s%s/crm/Contacts", eo.ApiUrl, strconv.Itoa(eo.Division))
+	urlStr := fmt.Sprintf("%s/crm/Contacts", eo.baseURL())
 
 	data := make(map[string]string)
 	data["Account"] = c.Account.String()
@@ -235,7 +235,7 @@ func (eo *ExactOnline) InsertContact(c *Contact) error {
 
 	co := Contact{}
 
-	err := eo.Post(urlStr, data, &co)
+	err := eo.PostValues(urlStr, data, &co)
 	if err != nil {
 		fmt.Println("ERROR in InsertContact:", err)
 		fmt.Println("url:", urlStr)

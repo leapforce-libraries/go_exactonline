@@ -2,7 +2,8 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
+
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // OutstandingInvoicesOverview stores OutstandingInvoicesOverview from exactonline
@@ -20,8 +21,8 @@ type OutstandingInvoicesOverview struct {
 }
 
 func (eo *ExactOnline) GetOutstandingInvoicesOverviewsInternal(filter string) (*[]OutstandingInvoicesOverview, error) {
-	selectFields := GetJsonTaggedFieldNames(OutstandingInvoicesOverview{})
-	urlStr := fmt.Sprintf("%s%s/read/financial/OutstandingInvoicesOverview?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", OutstandingInvoicesOverview{})
+	urlStr := fmt.Sprintf("%s/read/financial/OutstandingInvoicesOverview?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

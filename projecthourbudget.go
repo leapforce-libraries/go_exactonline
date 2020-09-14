@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // ProjectHourBudget stores ProjectHourBudget from exactonline
@@ -28,8 +28,8 @@ type ProjectHourBudget struct {
 }
 
 func (eo *ExactOnline) GetProjectHourBudgetsInternal(filter string) (*[]ProjectHourBudget, error) {
-	selectFields := GetJsonTaggedFieldNames(ProjectHourBudget{})
-	urlStr := fmt.Sprintf("%s%s/project/ProjectHourBudgets?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", ProjectHourBudget{})
+	urlStr := fmt.Sprintf("%s/project/ProjectHourBudgets?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

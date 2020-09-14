@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Receivable stores Receivable from exactonline
@@ -91,8 +91,8 @@ type Receivable struct {
 }
 
 func (eo *ExactOnline) GetReceivablesInternal(filter string) (*[]Receivable, error) {
-	selectFields := GetJsonTaggedFieldNames(Receivable{})
-	urlStr := fmt.Sprintf("%s%s/cashflow/Receivables?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Receivable{})
+	urlStr := fmt.Sprintf("%s/cashflow/Receivables?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // EmploymentContract stores EmploymentContract from exactonline
@@ -41,8 +41,8 @@ type EmploymentContract struct {
 }
 
 func (eo *ExactOnline) GetEmploymentContractsInternal(filter string) (*[]EmploymentContract, error) {
-	selectFields := GetJsonTaggedFieldNames(EmploymentContract{})
-	urlStr := fmt.Sprintf("%s%s/payroll/EmploymentContracts?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", EmploymentContract{})
+	urlStr := fmt.Sprintf("%s/payroll/EmploymentContracts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

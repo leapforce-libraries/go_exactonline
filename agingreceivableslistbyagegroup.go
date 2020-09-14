@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // AgingReceivablesListByAgeGroup stores AgingReceivablesListByAgeGroup from exactonline
@@ -30,9 +31,9 @@ type AgingReceivablesListByAgeGroup struct {
 }
 
 func (eo *ExactOnline) GetAgingReceivablesListByAgeGroupsInternal(ageGroup int, filter string) (*[]AgingReceivablesListByAgeGroup, error) {
-	selectFields := GetJsonTaggedFieldNames(AgingReceivablesListByAgeGroup{})
+	selectFields := utilities.GetTaggedFieldNames("json", AgingReceivablesListByAgeGroup{})
 
-	urlStr := fmt.Sprintf("%s%v/read/financial/AgingReceivablesListByAgeGroup?ageGroup=%v&$select=%s", eo.ApiUrl, eo.Division, ageGroup, selectFields)
+	urlStr := fmt.Sprintf("%s/read/financial/AgingReceivablesListByAgeGroup?ageGroup=%v&$select=%s", eo.baseURL(), ageGroup, selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}

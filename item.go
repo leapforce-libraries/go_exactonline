@@ -2,9 +2,9 @@ package exactonline
 
 import (
 	"fmt"
-	"strconv"
 
 	types "github.com/Leapforce-nl/go_types"
+	utilities "github.com/Leapforce-nl/go_utilities"
 )
 
 // Item stores Item from exactonline
@@ -111,8 +111,8 @@ type Item struct {
 }
 
 func (eo *ExactOnline) GetItemsInternal(filter string) (*[]Item, error) {
-	selectFields := GetJsonTaggedFieldNames(Item{})
-	urlStr := fmt.Sprintf("%s%s/logistics/Items?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
+	selectFields := utilities.GetTaggedFieldNames("json", Item{})
+	urlStr := fmt.Sprintf("%s/logistics/Items?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
 		urlStr += fmt.Sprintf("&$filter=%s", filter)
 	}
