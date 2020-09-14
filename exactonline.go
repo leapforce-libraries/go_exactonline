@@ -62,90 +62,9 @@ func (eo *ExactOnline) baseURL() string {
 	return fmt.Sprintf("%s/%v", apiURL, eo._division)
 }
 
-func (eo *ExactOnline) ValidateToken() error {
-	return eo.oAuth2.ValidateToken()
-}
-
 func (eo *ExactOnline) InitToken() error {
 	return eo.oAuth2.InitToken()
 }
-
-/*
-// ExactOnline stores exactonline configuration
-//
-type ExactOnline struct {
-	// config
-	ClientID     string
-	ClientSecret string
-	RedirectURL  string
-	AuthURL      string
-	TokenURL     string
-	//RefreshTokenKey string
-	ApiUrl   string
-	Division int
-	// bigquery
-	BigQuery          *bigquerytools.BigQuery
-	BigQueryDataset   string
-	BigQueryTablename string
-	InitCallback      callbackFunction
-	// data
-	//Me                Me
-	Contacts          []Contact
-	Accounts          []Account
-	SubscriptionTypes []SubscriptionType
-	Subscriptions     []Subscription
-	SubscriptionLines []SubscriptionLine
-	Divisions         []Division
-	Items             []Item
-	Token             *Token
-	// timer
-	//LastApiCall time.Time
-	//TimestampsTimestamps []time.Time
-	// rate limit
-	XRateLimitMinutelyRemaining int
-	XRateLimitMinutelyReset     int64
-	RequestCount                int64
-	IsLive                      bool
-}
-
-type callbackFunction func()
-*/
-// methods
-//
-/*
-func (eo *ExactOnline) Init() error {
-	if eo.ApiUrl == "" {
-		return &types.ErrorString{"ExactOnline ApiUrl not provided"}
-	}
-
-	if !strings.HasSuffix(eo.ApiUrl, "/") {
-		eo.ApiUrl = eo.ApiUrl + "/"
-	}
-
-	eo.RequestCount = 0
-
-	return nil
-}*/
-
-/*
-// GetJsonTaggedFieldNames returns comma separated string of
-// fieldnames of struct having a json tag
-//
-func GetJsonTaggedFieldNames(model interface{}) string {
-	val := reflect.ValueOf(model)
-	list := ""
-	for i := 0; i < val.Type().NumField(); i++ {
-		field := val.Type().Field(i)
-		tag := field.Tag.Get("json")
-		if tag != "" {
-			list += "," + field.Name
-		}
-	}
-
-	list = strings.Trim(list, ",")
-
-	return list
-}*/
 
 // Response represents highest level of exactonline api response
 //
@@ -199,43 +118,6 @@ func (eo *ExactOnline) Wait() error {
 	}
 
 	return nil
-
-	/*
-
-		maxCallsPerMinute := 60
-		msPerMinute := int64(60500) // 60000 ms go in a minute, plus a small margin...
-		len := len(eo.Timestamps)
-
-		if len >= maxCallsPerMinute {
-			ts := eo.Timestamps[len-maxCallsPerMinute]
-			ms := time.Now().Sub(ts).Milliseconds()
-
-			//fmt.Println(len, ms)
-
-			if ms < msPerMinute {
-				fmt.Println("waiting: ", (msPerMinute - ms), "ms")
-				time.Sleep(time.Duration(msPerMinute-ms) * time.Millisecond)
-			}
-		}
-
-		// add new timestamp
-		eo.Timestamps = append(eo.Timestamps, time.Now())
-
-		return nil*/
-}
-
-func (eo *ExactOnline) GetHttpClient() (*http.Client, error) {
-	err := eo.Wait()
-	if err != nil {
-		return nil, err
-	}
-
-	err = eo.ValidateToken()
-	if err != nil {
-		return nil, err
-	}
-
-	return new(http.Client), nil
 }
 
 // generic methods
