@@ -167,7 +167,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
 	response := Response{}
 	res, err := eo.oAuth2.Get(url, &response)
 	if err != nil {
-		return "", err
+		return "", eo.PrintError(res)
 	}
 
 	eo.ReadRateLimitHeaders(res)
@@ -196,7 +196,7 @@ func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) error {
 
 	res, err := eo.oAuth2.Put(url, buf, nil)
 	if err != nil {
-		return err
+		return eo.PrintError(res)
 	}
 
 	eo.ReadRateLimitHeaders(res)
@@ -221,7 +221,7 @@ func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) er
 	response := ResponseSingle{}
 	res, err := eo.oAuth2.Post(url, buf, &response)
 	if err != nil {
-		return err
+		return eo.PrintError(res)
 	}
 
 	eo.ReadRateLimitHeaders(res)
@@ -241,7 +241,7 @@ func (eo *ExactOnline) Delete(url string) error {
 
 	res, err := eo.oAuth2.Delete(url)
 	if err != nil {
-		return err
+		return eo.PrintError(res)
 	}
 
 	eo.ReadRateLimitHeaders(res)
