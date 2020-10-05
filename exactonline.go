@@ -251,7 +251,7 @@ func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) er
 func (eo *ExactOnline) Delete(url string) error {
 	eo.RequestCount++
 
-	res, err := eo.oAuth2.Delete(url)
+	res, err := eo.oAuth2.Delete(url, nil, nil)
 	if err != nil {
 		if res != nil {
 			return eo.PrintError(res)
