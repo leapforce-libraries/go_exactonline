@@ -54,7 +54,16 @@ func NewExactOnline(division int, clientID string, clientSecret string, scope st
 
 	eo.RequestCount = 0
 
-	eo.oAuth2 = oauth2.NewOAuth(apiName, clientID, clientSecret, scope, redirectURL, authURL, tokenURL, tokenHttpMethod, bigQuery, isLive)
+	config := oauth2.OAuth2Config{
+		ApiName:         apiName,
+		ClientID:        clientID,
+		ClientSecret:    clientSecret,
+		RedirectURL:     redirectURL,
+		AuthURL:         authURL,
+		TokenURL:        tokenURL,
+		TokenHTTPMethod: tokenHttpMethod,
+	}
+	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery, isLive)
 	return &eo, nil
 }
 
