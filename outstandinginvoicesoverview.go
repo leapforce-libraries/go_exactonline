@@ -3,7 +3,7 @@ package exactonline
 import (
 	"fmt"
 
-	utilities "github.com/Leapforce-nl/go_utilities"
+	utilities "github.com/leapforce-libraries/go_utilities"
 )
 
 // OutstandingInvoicesOverview stores OutstandingInvoicesOverview from exactonline

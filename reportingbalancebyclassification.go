@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	types "github.com/Leapforce-nl/go_types"
-	utilities "github.com/Leapforce-nl/go_utilities"
+	types "github.com/leapforce-libraries/go_types"
+	utilities "github.com/leapforce-libraries/go_utilities"
 )
 
 // ReportingBalanceByClassification stores ReportingBalanceByClassification from exactonline

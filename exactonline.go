@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	bigquerytools "github.com/Leapforce-nl/go_bigquerytools"
-	oauth2 "github.com/Leapforce-nl/go_oauth2"
-	types "github.com/Leapforce-nl/go_types"
+	bigquerytools "github.com/leapforce-libraries/go_bigquerytools"
+	oauth2 "github.com/leapforce-libraries/go_oauth2"
+	types "github.com/leapforce-libraries/go_types"
 )
 
 const (
