@@ -26,8 +26,8 @@ const (
 // ExactOnline stores ExactOnline configuration
 //
 type ExactOnline struct {
-	_division int
-	oAuth2    *oauth2.OAuth2
+	division int
+	oAuth2   *oauth2.OAuth2
 
 	// data
 	Contacts          []Contact
@@ -48,9 +48,8 @@ type ExactOnline struct {
 
 // methods
 //
-func NewExactOnline(division int, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
+func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
 	eo := ExactOnline{}
-	eo._division = division
 
 	eo.RequestCount = 0
 
@@ -64,11 +63,19 @@ func NewExactOnline(division int, clientID string, clientSecret string, scope st
 		TokenHTTPMethod: tokenHttpMethod,
 	}
 	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery, isLive)
+
+	me, err := eo.GetMe()
+	if err == nil {
+		return nil, err
+	}
+
+	eo.division = me.CurrentDivision
+
 	return &eo, nil
 }
 
 func (eo *ExactOnline) baseURL() string {
-	return fmt.Sprintf("%s/%v", apiURL, eo._division)
+	return fmt.Sprintf("%s/%v", apiURL, eo.division)
 }
 
 func (eo *ExactOnline) InitToken() error {
