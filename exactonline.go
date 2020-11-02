@@ -65,7 +65,7 @@ func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery
 	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery, isLive)
 
 	me, err := eo.GetMe()
-	if err == nil {
+	if err != nil {
 		return nil, err
 	}
 
