@@ -69,11 +69,7 @@ func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery
 		return nil, err
 	}
 
-	fmt.Println("me", me)
-
 	eo.division = me.CurrentDivision
-
-	fmt.Println("eo.division", eo.division)
 
 	return &eo, nil
 }

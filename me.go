@@ -48,8 +48,6 @@ type Me struct {
 func (eo *ExactOnline) GetMe() (*Me, error) {
 	urlStr := fmt.Sprintf("%s/current/Me", eo.apiURL())
 
-	fmt.Println(urlStr)
-
 	me := []Me{}
 
 	_, err := eo.Get(urlStr, &me)
