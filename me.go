@@ -30,7 +30,7 @@ type Me struct {
 	Language                    string          `json:"Language"`
 	LanguageCode                string          `json:"LanguageCode"`
 	LastName                    string          `json:"LastName"`
-	Legislation                 int64           `json:"Legislation"`
+	Legislation                 string          `json:"Legislation"`
 	MiddleName                  string          `json:"MiddleName"`
 	Mobile                      string          `json:"Mobile"`
 	Nationality                 string          `json:"Nationality"`
