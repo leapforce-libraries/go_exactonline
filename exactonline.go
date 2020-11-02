@@ -69,6 +69,8 @@ func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery
 		return nil, err
 	}
 
+	fmt.Println("me", me)
+
 	eo.division = me.CurrentDivision
 
 	fmt.Println("eo.division", eo.division)
@@ -78,6 +80,10 @@ func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery
 
 func (eo *ExactOnline) baseURL() string {
 	return fmt.Sprintf("%s/%v", apiURL, eo.division)
+}
+
+func (eo *ExactOnline) apiURL() string {
+	return apiURL
 }
 
 func (eo *ExactOnline) InitToken() error {

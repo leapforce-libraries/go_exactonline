@@ -2,6 +2,7 @@ package exactonline
 
 import (
 	"encoding/json"
+	"fmt"
 
 	types "github.com/leapforce-libraries/go_types"
 )
@@ -45,7 +46,7 @@ type Me struct {
 }
 
 func (eo *ExactOnline) GetMe() (*Me, error) {
-	urlStr := "https://start.exactonline.nl/api/v1/current/Me"
+	urlStr := fmt.Sprintf("%s/current/Me", eo.apiURL())
 
 	me := []Me{}
 
