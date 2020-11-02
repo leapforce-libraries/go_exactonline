@@ -26,7 +26,7 @@ const (
 // ExactOnline stores ExactOnline configuration
 //
 type ExactOnline struct {
-	division int
+	division int32
 	oAuth2   *oauth2.OAuth2
 
 	// data
@@ -70,6 +70,8 @@ func NewExactOnline(clientID string, clientSecret string, scope string, bigQuery
 	}
 
 	eo.division = me.CurrentDivision
+
+	fmt.Println("eo.division", eo.division)
 
 	return &eo, nil
 }
