@@ -26,7 +26,7 @@ const (
 // ExactOnline stores ExactOnline configuration
 //
 type ExactOnline struct {
-	division int
+	division int32
 	oAuth2   *oauth2.OAuth2
 
 	// data
@@ -48,7 +48,7 @@ type ExactOnline struct {
 
 // methods
 //
-func NewExactOnline(division int, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
+func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
 	eo := ExactOnline{}
 	eo.division = division
 
