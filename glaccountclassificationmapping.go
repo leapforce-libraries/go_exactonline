@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -23,7 +24,7 @@ type GLAccountClassificationMapping struct {
 	GLSchemeID                types.GUID `json:"GLSchemeID"`
 }
 
-func (eo *ExactOnline) GetGLAccountClassificationMappingsInternal(filter string) (*[]GLAccountClassificationMapping, error) {
+func (eo *ExactOnline) GetGLAccountClassificationMappingsInternal(filter string) (*[]GLAccountClassificationMapping, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", GLAccountClassificationMapping{})
 	urlStr := fmt.Sprintf("%s/financial/GLAccountClassificationMappings?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -52,7 +53,7 @@ func (eo *ExactOnline) GetGLAccountClassificationMappingsInternal(filter string)
 	return &glAccountClassificationMappings, nil
 }
 
-func (eo *ExactOnline) GetGLAccountClassificationMappings() (*[]GLAccountClassificationMapping, error) {
+func (eo *ExactOnline) GetGLAccountClassificationMappings() (*[]GLAccountClassificationMapping, *errortools.Error) {
 	acc, err := eo.GetGLAccountClassificationMappingsInternal("")
 	if err != nil {
 		return nil, err

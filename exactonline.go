@@ -3,6 +3,7 @@ package exactonline
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 	"time"
 
 	bigquerytools "github.com/leapforce-libraries/go_bigquerytools"
+	errortools "github.com/leapforce-libraries/go_errortools"
 	oauth2 "github.com/leapforce-libraries/go_oauth2"
-	types "github.com/leapforce-libraries/go_types"
 )
 
 const (
@@ -75,7 +76,7 @@ func (eo *ExactOnline) apiURL() string {
 	return apiURL
 }
 
-func (eo *ExactOnline) InitToken() error {
+func (eo *ExactOnline) InitToken() *errortools.Error {
 	return eo.oAuth2.InitToken()
 }
 
@@ -111,7 +112,6 @@ func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) error {
 		}
 	}
 
-	//fmt.Println("FindSubscriptionsForAccount:", len(ac.Subscriptions))
 	return nil
 }
 
@@ -136,8 +136,6 @@ func (eo *ExactOnline) Wait() error {
 //
 
 func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
-	//fmt.Println("X-RateLimit-Minutely-Remaining", res.Header.Get("X-RateLimit-Minutely-Remaining"))
-	//fmt.Println("X-RateLimit-Minutely-Reset", res.Header.Get("X-RateLimit-Minutely-Reset"))
 	remaining, errRem := strconv.Atoi(res.Header.Get("X-RateLimit-Minutely-Remaining"))
 	reset, errRes := strconv.ParseInt(res.Header.Get("X-RateLimit-Minutely-Reset"), 10, 64)
 	if errRem == nil && errRes == nil {
@@ -146,78 +144,71 @@ func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	}
 }
 
-func (eo *ExactOnline) PrintError(res *http.Response) error {
-	fmt.Println("Status", res.Status)
-
+func unmarshalError(res *http.Response) error {
 	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		//fmt.Println("errUnmarshal1")
-		return err
+		return nil
 	}
 
 	ee := ExactOnlineError{}
 
 	err = json.Unmarshal(b, &ee)
 	if err != nil {
-		//fmt.Println("errUnmarshal1")
-		return err
+		return nil
 	}
 
-	//fmt.Println(ee.Err.Message.Value)
-	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
-	return &types.ErrorString{message}
+	return errors.New(fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value))
 }
 
-func (eo *ExactOnline) Get(url string, model interface{}) (string, error) {
+func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.Error) {
 	err := eo.Wait()
 	if err != nil {
-		return "", err
+		return "", errortools.ErrorMessage(err)
 	}
 
 	eo.RequestCount++
 
 	response := Response{}
-	res, err := eo.oAuth2.Get(url, &response)
-	if err != nil {
-		if res != nil {
-			return "", eo.PrintError(res)
-		} else {
-			return "", err
+	_, res, e := eo.oAuth2.Get(url, &response)
+	if e != nil {
+		message := unmarshalError(res)
+		if message != nil {
+			e.SetMessage(e)
 		}
-
+		return "", e
 	}
 
 	eo.ReadRateLimitHeaders(res)
 
 	err = json.Unmarshal(response.Data.Results, &model)
 	if err != nil {
-		return "", err
+		return "", errortools.ErrorMessage(err)
 	}
 
 	return response.Data.Next, nil
 }
 
-func (eo *ExactOnline) PutValues(url string, values map[string]string) error {
+func (eo *ExactOnline) PutValues(url string, values map[string]string) *errortools.Error {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(values)
 
 	return eo.Put(url, buf)
 }
 
-func (eo *ExactOnline) PutBytes(url string, b []byte) error {
+func (eo *ExactOnline) PutBytes(url string, b []byte) *errortools.Error {
 	return eo.Put(url, bytes.NewBuffer(b))
 }
 
-func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) error {
+func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) *errortools.Error {
 	eo.RequestCount++
 
-	res, err := eo.oAuth2.Put(url, buf, nil)
-	if err != nil {
-		if res != nil {
-			return eo.PrintError(res)
-		} else {
-			return err
+	_, res, e := eo.oAuth2.Put(url, buf, nil)
+	if e != nil {
+		message := unmarshalError(res)
+		if message != nil {
+			e.SetMessage(e)
 		}
+		return e
 	}
 
 	eo.ReadRateLimitHeaders(res)
@@ -225,52 +216,53 @@ func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) error {
 	return nil
 }
 
-func (eo *ExactOnline) PostValues(url string, values map[string]string, model interface{}) error {
+func (eo *ExactOnline) PostValues(url string, values map[string]string, model interface{}) *errortools.Error {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(values)
 
 	return eo.Post(url, buf, model)
 }
 
-func (eo *ExactOnline) PostBytes(url string, b []byte, model interface{}) error {
+func (eo *ExactOnline) PostBytes(url string, b []byte, model interface{}) *errortools.Error {
 	return eo.Post(url, bytes.NewBuffer(b), model)
 }
 
-func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) error {
+func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) *errortools.Error {
 	eo.RequestCount++
 
 	response := ResponseSingle{}
-	res, err := eo.oAuth2.Post(url, buf, &response)
-	if err != nil {
-		if res != nil {
-			return eo.PrintError(res)
-		} else {
-			return err
+	_, res, e := eo.oAuth2.Post(url, buf, &response)
+	if e != nil {
+		message := unmarshalError(res)
+		if message != nil {
+			e.SetMessage(e)
 		}
+		return e
 	}
 
 	eo.ReadRateLimitHeaders(res)
 
 	defer res.Body.Close()
 
-	err = json.Unmarshal(response.Data, &model)
+	err := json.Unmarshal(response.Data, &model)
 	if err != nil {
-		return err
+		e.SetMessage(err)
+		return e
 	}
 
 	return nil
 }
 
-func (eo *ExactOnline) Delete(url string) error {
+func (eo *ExactOnline) Delete(url string) *errortools.Error {
 	eo.RequestCount++
 
-	res, err := eo.oAuth2.Delete(url, nil, nil)
-	if err != nil {
-		if res != nil {
-			return eo.PrintError(res)
-		} else {
-			return err
+	_, res, e := eo.oAuth2.Delete(url, nil, nil)
+	if e != nil {
+		message := unmarshalError(res)
+		if message != nil {
+			e.SetMessage(e)
 		}
+		return e
 	}
 
 	eo.ReadRateLimitHeaders(res)

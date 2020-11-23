@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -65,7 +66,7 @@ type Asset struct {
 	TransactionEntryNo       int32       `json:"TransactionEntryNo"`
 }
 
-func (eo *ExactOnline) GetAssetsInternal(filter string) (*[]Asset, error) {
+func (eo *ExactOnline) GetAssetsInternal(filter string) (*[]Asset, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Asset{})
 	urlStr := fmt.Sprintf("%s/assets/Assets?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -94,7 +95,7 @@ func (eo *ExactOnline) GetAssetsInternal(filter string) (*[]Asset, error) {
 	return &assets, nil
 }
 
-func (eo *ExactOnline) GetAssets() (*[]Asset, error) {
+func (eo *ExactOnline) GetAssets() (*[]Asset, *errortools.Error) {
 	acc, err := eo.GetAssetsInternal("")
 	if err != nil {
 		return nil, err

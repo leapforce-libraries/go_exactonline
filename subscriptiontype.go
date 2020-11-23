@@ -3,6 +3,8 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
+
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -14,7 +16,7 @@ type SubscriptionType struct {
 	Code string     `json:"Code"`
 }
 
-func (eo *ExactOnline) GetSubscriptionTypes() error {
+func (eo *ExactOnline) GetSubscriptionTypes() *errortools.Error {
 	selectFields := utilities.GetTaggedFieldNames("json", SubscriptionType{})
 	urlStr := fmt.Sprintf("%s/subscription/SubscriptionTypes?$select=%s", eo.baseURL(), selectFields)
 	//fmt.Println(urlStr)

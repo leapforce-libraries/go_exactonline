@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -26,7 +27,7 @@ type AccountInvolvedAccount struct {
 	Notes                                        string      `json:"Notes"`
 }
 
-func (eo *ExactOnline) GetAccountInvolvedAccountsInternal(filter string) (*[]AccountInvolvedAccount, error) {
+func (eo *ExactOnline) GetAccountInvolvedAccountsInternal(filter string) (*[]AccountInvolvedAccount, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", AccountInvolvedAccount{})
 	urlStr := fmt.Sprintf("%s/accountancy/AccountInvolvedAccounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -54,7 +55,7 @@ func (eo *ExactOnline) GetAccountInvolvedAccountsInternal(filter string) (*[]Acc
 	return &accountInvolvedAccounts, nil
 }
 
-func (eo *ExactOnline) GetAccountInvolvedAccounts() (*[]AccountInvolvedAccount, error) {
+func (eo *ExactOnline) GetAccountInvolvedAccounts() (*[]AccountInvolvedAccount, *errortools.Error) {
 	acc, err := eo.GetAccountInvolvedAccountsInternal("")
 	if err != nil {
 		return nil, err

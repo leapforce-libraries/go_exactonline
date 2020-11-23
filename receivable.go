@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -90,7 +91,7 @@ type Receivable struct {
 	YourRef                       string      `json:"YourRef"`
 }
 
-func (eo *ExactOnline) GetReceivablesInternal(filter string) (*[]Receivable, error) {
+func (eo *ExactOnline) GetReceivablesInternal(filter string) (*[]Receivable, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Receivable{})
 	urlStr := fmt.Sprintf("%s/cashflow/Receivables?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -119,7 +120,7 @@ func (eo *ExactOnline) GetReceivablesInternal(filter string) (*[]Receivable, err
 	return &receivables, nil
 }
 
-func (eo *ExactOnline) GetReceivables() (*[]Receivable, error) {
+func (eo *ExactOnline) GetReceivables() (*[]Receivable, *errortools.Error) {
 	acc, err := eo.GetReceivablesInternal("")
 	if err != nil {
 		return nil, err

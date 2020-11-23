@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -52,7 +53,7 @@ type GLAccount struct {
 	YearEndReflectionGLAccount     types.GUID  `json:"YearEndReflectionGLAccount"`
 }
 
-func (eo *ExactOnline) GetGLAccountsInternal(filter string) (*[]GLAccount, error) {
+func (eo *ExactOnline) GetGLAccountsInternal(filter string) (*[]GLAccount, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", GLAccount{})
 	urlStr := fmt.Sprintf("%s/bulk/financial/GLAccounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -81,7 +82,7 @@ func (eo *ExactOnline) GetGLAccountsInternal(filter string) (*[]GLAccount, error
 	return &glAccounts, nil
 }
 
-func (eo *ExactOnline) GetGLAccounts() (*[]GLAccount, error) {
+func (eo *ExactOnline) GetGLAccounts() (*[]GLAccount, *errortools.Error) {
 	acc, err := eo.GetGLAccountsInternal("")
 	if err != nil {
 		return nil, err

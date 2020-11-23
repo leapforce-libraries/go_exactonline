@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
 
@@ -14,7 +15,7 @@ type RevenueList struct {
 	Amount float64 `json:"Amount"`
 }
 
-func (eo *ExactOnline) GetRevenueListsInternal(filter string) (*[]RevenueList, error) {
+func (eo *ExactOnline) GetRevenueListsInternal(filter string) (*[]RevenueList, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", RevenueList{})
 	urlStr := fmt.Sprintf("%s/read/financial/RevenueList?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -43,7 +44,7 @@ func (eo *ExactOnline) GetRevenueListsInternal(filter string) (*[]RevenueList, e
 	return &revenueLists, nil
 }
 
-func (eo *ExactOnline) GetRevenueLists() (*[]RevenueList, error) {
+func (eo *ExactOnline) GetRevenueLists() (*[]RevenueList, *errortools.Error) {
 	acc, err := eo.GetRevenueListsInternal("")
 	if err != nil {
 		return nil, err
@@ -51,27 +52,3 @@ func (eo *ExactOnline) GetRevenueLists() (*[]RevenueList, error) {
 
 	return acc, nil
 }
-
-/*
-func (eo *ExactOnline) GetRevenueLists() error {
-	selectFields := GetJsonTaggedFieldNames(RevenueList{})
-	urlStr := fmt.Sprintf("%s%s/logistics/RevenueLists?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
-	//fmt.Println(urlStr)
-
-	for urlStr != "" {
-		it := []RevenueList{}
-
-		str, err := eo.Get(urlStr, &it)
-		if err != nil {
-			fmt.Println("ERROR in GetRevenueLists:", err)
-			fmt.Println("url:", urlStr)
-			return err
-		}
-
-		eo.RevenueLists = append(eo.RevenueLists, it...)
-
-		urlStr = str
-	}
-
-	return nil
-}*/

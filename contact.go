@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -128,7 +129,7 @@ func (c *Contact) Values() (string, string) {
 	return old, new
 }
 
-func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {
+func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Contact{})
 	urlStr := fmt.Sprintf("%s/crm/Contacts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -154,7 +155,7 @@ func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, error) {
 	return &contacts, nil
 }
 
-func (eo *ExactOnline) GetContacts() error {
+func (eo *ExactOnline) GetContacts() *errortools.Error {
 	co, err := eo.GetContactsInternal("")
 	if err != nil {
 		return err
@@ -164,7 +165,7 @@ func (eo *ExactOnline) GetContacts() error {
 	return nil
 }
 
-func (eo *ExactOnline) GetContactsByEmail(account string, email string) ([]Contact, error) {
+func (eo *ExactOnline) GetContactsByEmail(account string, email string) ([]Contact, *errortools.Error) {
 	filter := fmt.Sprintf("Account eq guid'%s' and Email eq '%s'", account, email)
 	contacts := []Contact{}
 
@@ -179,7 +180,7 @@ func (eo *ExactOnline) GetContactsByEmail(account string, email string) ([]Conta
 	return contacts, nil
 }
 
-func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([]Contact, error) {
+func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([]Contact, *errortools.Error) {
 	filter := fmt.Sprintf("Account eq guid'%s' and FullName eq '%s'", account, fullname)
 	contacts := []Contact{}
 
@@ -194,7 +195,7 @@ func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([
 	return contacts, nil
 }
 
-func (eo *ExactOnline) UpdateContact(c *Contact) error {
+func (eo *ExactOnline) UpdateContact(c *Contact) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Contacts(guid'%s')", eo.baseURL(), c.ID.String())
 
 	data := make(map[string]string)
@@ -220,7 +221,7 @@ func (eo *ExactOnline) UpdateContact(c *Contact) error {
 	return nil
 }
 
-func (eo *ExactOnline) InsertContact(c *Contact) error {
+func (eo *ExactOnline) InsertContact(c *Contact) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Contacts", eo.baseURL())
 
 	data := make(map[string]string)

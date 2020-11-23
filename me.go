@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 )
 
@@ -45,7 +46,7 @@ type Me struct {
 	UserName                    string          `json:"UserName"`
 }
 
-func (eo *ExactOnline) GetMe() (*Me, error) {
+func (eo *ExactOnline) GetMe() (*Me, *errortools.Error) {
 	urlStr := fmt.Sprintf("%s/current/Me", eo.apiURL())
 
 	me := []Me{}

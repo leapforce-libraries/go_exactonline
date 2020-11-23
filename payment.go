@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -80,7 +81,7 @@ type Payment struct {
 	YourRef                      string      `json:"YourRef"`
 }
 
-func (eo *ExactOnline) GetPaymentsInternal(filter string) (*[]Payment, error) {
+func (eo *ExactOnline) GetPaymentsInternal(filter string) (*[]Payment, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Payment{})
 	urlStr := fmt.Sprintf("%s/cashflow/Payments?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -110,7 +111,7 @@ func (eo *ExactOnline) GetPaymentsInternal(filter string) (*[]Payment, error) {
 	return &payments, nil
 }
 
-func (eo *ExactOnline) GetPayments() (*[]Payment, error) {
+func (eo *ExactOnline) GetPayments() (*[]Payment, *errortools.Error) {
 	acc, err := eo.GetPaymentsInternal("")
 	if err != nil {
 		return nil, err

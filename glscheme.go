@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -24,7 +25,7 @@ type GLScheme struct {
 	TargetNamespace  string      `json:"TargetNamespace"`
 }
 
-func (eo *ExactOnline) GetGLSchemesInternal(filter string) (*[]GLScheme, error) {
+func (eo *ExactOnline) GetGLSchemesInternal(filter string) (*[]GLScheme, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", GLScheme{})
 	urlStr := fmt.Sprintf("%s/financial/GLSchemes?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -53,7 +54,7 @@ func (eo *ExactOnline) GetGLSchemesInternal(filter string) (*[]GLScheme, error) 
 	return &glSchemes, nil
 }
 
-func (eo *ExactOnline) GetGLSchemes() (*[]GLScheme, error) {
+func (eo *ExactOnline) GetGLSchemes() (*[]GLScheme, *errortools.Error) {
 	acc, err := eo.GetGLSchemesInternal("")
 	if err != nil {
 		return nil, err

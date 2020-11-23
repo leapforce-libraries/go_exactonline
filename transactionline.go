@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -79,7 +80,7 @@ type TransactionLine struct {
 	YourRef                   string      `json:"YourRef"`
 }
 
-func (eo *ExactOnline) GetTransactionLinesInternal(filter string) (*[]TransactionLine, error) {
+func (eo *ExactOnline) GetTransactionLinesInternal(filter string) (*[]TransactionLine, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", TransactionLine{})
 	urlStr := fmt.Sprintf("%s/bulk/financial/TransactionLines?$select=%s", eo.baseURL(), selectFields)
 	//urlStr := fmt.Sprintf("%s%s/financialtransaction/TransactionLines?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
@@ -109,7 +110,7 @@ func (eo *ExactOnline) GetTransactionLinesInternal(filter string) (*[]Transactio
 	return &transactionLines, nil
 }
 
-func (eo *ExactOnline) GetTransactionLines() (*[]TransactionLine, error) {
+func (eo *ExactOnline) GetTransactionLines() (*[]TransactionLine, *errortools.Error) {
 	acc, err := eo.GetTransactionLinesInternal("")
 	if err != nil {
 		return nil, err

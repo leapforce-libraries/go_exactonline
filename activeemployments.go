@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -56,7 +57,7 @@ type ActiveEmployment struct {
 	StartDateOrganization    *types.Date `json:"StartDateOrganization,omitempty"`
 }
 
-func (eo *ExactOnline) GetActiveEmploymentsInternal(filter string) (*[]ActiveEmployment, error) {
+func (eo *ExactOnline) GetActiveEmploymentsInternal(filter string) (*[]ActiveEmployment, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", ActiveEmployment{})
 	urlStr := fmt.Sprintf("%s/payroll/ActiveEmployments?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -85,7 +86,7 @@ func (eo *ExactOnline) GetActiveEmploymentsInternal(filter string) (*[]ActiveEmp
 	return &activeEmployments, nil
 }
 
-func (eo *ExactOnline) GetActiveEmployments() (*[]ActiveEmployment, error) {
+func (eo *ExactOnline) GetActiveEmployments() (*[]ActiveEmployment, *errortools.Error) {
 	acc, err := eo.GetActiveEmploymentsInternal("")
 	if err != nil {
 		return nil, err

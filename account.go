@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -186,7 +187,7 @@ func (a *Account) Values() (string, string) {
 	return old, new
 }
 
-func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {
+func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Account{})
 	urlStr := fmt.Sprintf("%s/crm/Accounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -214,7 +215,7 @@ func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, error) {
 	return &accounts, nil
 }
 
-func (eo *ExactOnline) GetAccounts() error {
+func (eo *ExactOnline) GetAccounts() *errortools.Error {
 	acc, err := eo.GetAccountsInternal("")
 	if err != nil {
 		return err
@@ -224,7 +225,7 @@ func (eo *ExactOnline) GetAccounts() error {
 	return nil
 }
 
-func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) ([]Account, error) {
+func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) ([]Account, *errortools.Error) {
 	filter := fmt.Sprintf("ChamberOfCommerce eq '%s'", chamberOfCommerce)
 	accounts := []Account{}
 
@@ -237,7 +238,7 @@ func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) (
 	return accounts, nil
 }
 
-func (eo *ExactOnline) UpdateAccount(a *Account) error {
+func (eo *ExactOnline) UpdateAccount(a *Account) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Accounts(guid'%s')", eo.baseURL(), a.ID.String())
 
 	data := make(map[string]string)
@@ -270,7 +271,7 @@ func (eo *ExactOnline) UpdateAccount(a *Account) error {
 	return nil
 }
 
-func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
+func (eo *ExactOnline) UpdateAccountMainContact(a *Account) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Accounts(guid'%s')", eo.baseURL(), a.ID.String())
 
 	data := make(map[string]string)
@@ -291,7 +292,7 @@ func (eo *ExactOnline) UpdateAccountMainContact(a *Account) error {
 	return nil
 }
 
-func (eo *ExactOnline) InsertAccount(a *Account) error {
+func (eo *ExactOnline) InsertAccount(a *Account) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Accounts", eo.baseURL())
 
 	data := make(map[string]string)

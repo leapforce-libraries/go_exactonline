@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -27,7 +28,7 @@ type ProjectHourBudget struct {
 	ProjectDescription string      `json:"ProjectDescription"`
 }
 
-func (eo *ExactOnline) GetProjectHourBudgetsInternal(filter string) (*[]ProjectHourBudget, error) {
+func (eo *ExactOnline) GetProjectHourBudgetsInternal(filter string) (*[]ProjectHourBudget, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", ProjectHourBudget{})
 	urlStr := fmt.Sprintf("%s/project/ProjectHourBudgets?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -60,7 +61,7 @@ func (eo *ExactOnline) GetProjectHourBudgetsInternal(filter string) (*[]ProjectH
 	return &projectHourBudgets, nil
 }
 
-func (eo *ExactOnline) GetProjectHourBudgets() (*[]ProjectHourBudget, error) {
+func (eo *ExactOnline) GetProjectHourBudgets() (*[]ProjectHourBudget, *errortools.Error) {
 	acc, err := eo.GetProjectHourBudgetsInternal("")
 	if err != nil {
 		return nil, err
@@ -69,7 +70,7 @@ func (eo *ExactOnline) GetProjectHourBudgets() (*[]ProjectHourBudget, error) {
 	return acc, nil
 }
 
-func (eo *ExactOnline) GetProjectHourBudgetsByProject(projectID types.GUID) (*[]ProjectHourBudget, error) {
+func (eo *ExactOnline) GetProjectHourBudgetsByProject(projectID types.GUID) (*[]ProjectHourBudget, *errortools.Error) {
 	filter := fmt.Sprintf("Project eq guid'%s'", projectID.String())
 
 	acc, err := eo.GetProjectHourBudgetsInternal(filter)

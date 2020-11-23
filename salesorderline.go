@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -53,7 +54,7 @@ type SalesOrderLine struct {
 	VATPercentage           float64     `json:"VATPercentage"`
 }
 
-func (eo *ExactOnline) GetSalesOrderLinesInternal(filter string) (*[]SalesOrderLine, error) {
+func (eo *ExactOnline) GetSalesOrderLinesInternal(filter string) (*[]SalesOrderLine, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", SalesOrderLine{})
 	urlStr := fmt.Sprintf("%s/bulk/SalesOrder/SalesOrderLines?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -82,7 +83,7 @@ func (eo *ExactOnline) GetSalesOrderLinesInternal(filter string) (*[]SalesOrderL
 	return &salesOrderLines, nil
 }
 
-func (eo *ExactOnline) GetSalesOrderLines() (*[]SalesOrderLine, error) {
+func (eo *ExactOnline) GetSalesOrderLines() (*[]SalesOrderLine, *errortools.Error) {
 	acc, err := eo.GetSalesOrderLinesInternal("")
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -30,7 +31,7 @@ type ReportingBalance struct {
 	Type                  int32      `json:"Type"`
 }
 
-func (eo *ExactOnline) GetReportingBalancesInternal(filter string) (*[]ReportingBalance, error) {
+func (eo *ExactOnline) GetReportingBalancesInternal(filter string) (*[]ReportingBalance, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", ReportingBalance{})
 	urlStr := fmt.Sprintf("%s/financial/ReportingBalance?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -59,7 +60,7 @@ func (eo *ExactOnline) GetReportingBalancesInternal(filter string) (*[]Reporting
 	return &reportingBalances, nil
 }
 
-func (eo *ExactOnline) GetReportingBalances() (*[]ReportingBalance, error) {
+func (eo *ExactOnline) GetReportingBalances() (*[]ReportingBalance, *errortools.Error) {
 	acc, err := eo.GetReportingBalancesInternal("")
 	if err != nil {
 		return nil, err
@@ -67,27 +68,3 @@ func (eo *ExactOnline) GetReportingBalances() (*[]ReportingBalance, error) {
 
 	return acc, nil
 }
-
-/*
-func (eo *ExactOnline) GetReportingBalances() error {
-	selectFields := GetJsonTaggedFieldNames(ReportingBalance{})
-	urlStr := fmt.Sprintf("%s%s/logistics/ReportingBalances?$select=%s", eo.ApiUrl, strconv.Itoa(eo.Division), selectFields)
-	//fmt.Println(urlStr)
-
-	for urlStr != "" {
-		it := []ReportingBalance{}
-
-		str, err := eo.Get(urlStr, &it)
-		if err != nil {
-			fmt.Println("ERROR in GetReportingBalances:", err)
-			fmt.Println("url:", urlStr)
-			return err
-		}
-
-		eo.ReportingBalances = append(eo.ReportingBalances, it...)
-
-		urlStr = str
-	}
-
-	return nil
-}*/

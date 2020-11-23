@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -29,7 +30,7 @@ type PayablesListByAgeGroup struct {
 	YourRef            string      `json:"YourRef"`
 }
 
-func (eo *ExactOnline) GetPayablesListByAgeGroupsInternal(ageGroup int, filter string) (*[]PayablesListByAgeGroup, error) {
+func (eo *ExactOnline) GetPayablesListByAgeGroupsInternal(ageGroup int, filter string) (*[]PayablesListByAgeGroup, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", PayablesListByAgeGroup{})
 	urlStr := fmt.Sprintf("%s/read/financial/PayablesListByAgeGroup?ageGroup=%v&$select=%s", eo.baseURL(), ageGroup, selectFields)
 	if filter != "" {
@@ -58,7 +59,7 @@ func (eo *ExactOnline) GetPayablesListByAgeGroupsInternal(ageGroup int, filter s
 	return &payablesListByAgeGroups, nil
 }
 
-func (eo *ExactOnline) GetPayablesListByAgeGroups(ageGroup int) (*[]PayablesListByAgeGroup, error) {
+func (eo *ExactOnline) GetPayablesListByAgeGroups(ageGroup int) (*[]PayablesListByAgeGroup, *errortools.Error) {
 	acc, err := eo.GetPayablesListByAgeGroupsInternal(ageGroup, "")
 	if err != nil {
 		return nil, err

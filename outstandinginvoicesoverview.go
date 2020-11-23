@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
 
@@ -20,7 +21,7 @@ type OutstandingInvoicesOverview struct {
 	OverdueReceivableInvoiceCount      float64 `json:"OverdueReceivableInvoiceCount"`
 }
 
-func (eo *ExactOnline) GetOutstandingInvoicesOverviewsInternal(filter string) (*[]OutstandingInvoicesOverview, error) {
+func (eo *ExactOnline) GetOutstandingInvoicesOverviewsInternal(filter string) (*[]OutstandingInvoicesOverview, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", OutstandingInvoicesOverview{})
 	urlStr := fmt.Sprintf("%s/read/financial/OutstandingInvoicesOverview?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -49,7 +50,7 @@ func (eo *ExactOnline) GetOutstandingInvoicesOverviewsInternal(filter string) (*
 	return &outstandingInvoicesOverviews, nil
 }
 
-func (eo *ExactOnline) GetOutstandingInvoicesOverviews() (*[]OutstandingInvoicesOverview, error) {
+func (eo *ExactOnline) GetOutstandingInvoicesOverviews() (*[]OutstandingInvoicesOverview, *errortools.Error) {
 	acc, err := eo.GetOutstandingInvoicesOverviewsInternal("")
 	if err != nil {
 		return nil, err

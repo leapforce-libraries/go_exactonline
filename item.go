@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -110,7 +111,7 @@ type Item struct {
 	UnitType                string      `json:"UnitType"`
 }
 
-func (eo *ExactOnline) GetItemsInternal(filter string) (*[]Item, error) {
+func (eo *ExactOnline) GetItemsInternal(filter string) (*[]Item, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Item{})
 	urlStr := fmt.Sprintf("%s/logistics/Items?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -139,7 +140,7 @@ func (eo *ExactOnline) GetItemsInternal(filter string) (*[]Item, error) {
 	return &items, nil
 }
 
-func (eo *ExactOnline) GetItems() (*[]Item, error) {
+func (eo *ExactOnline) GetItems() (*[]Item, *errortools.Error) {
 	acc, err := eo.GetItemsInternal("")
 	if err != nil {
 		return nil, err

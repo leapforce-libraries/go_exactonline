@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -34,7 +35,7 @@ type ReportingBalanceByClassification struct {
 	Type                      int32      `json:"Type"`
 }
 
-func (eo *ExactOnline) GetReportingBalanceByClassificationsInternal(glScheme GLScheme, reportingYear int, filter string) (*[]ReportingBalanceByClassification, error) {
+func (eo *ExactOnline) GetReportingBalanceByClassificationsInternal(glScheme GLScheme, reportingYear int, filter string) (*[]ReportingBalanceByClassification, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", ReportingBalanceByClassification{})
 	urlStr := fmt.Sprintf("%s/read/financial/ReportingBalanceByClassification?glScheme=guid'%s'&reportingYear=%s&$select=%s", eo.baseURL(), glScheme.ID.String(), strconv.Itoa(reportingYear), selectFields)
 	if filter != "" {
@@ -63,7 +64,7 @@ func (eo *ExactOnline) GetReportingBalanceByClassificationsInternal(glScheme GLS
 	return &reportingBalanceByClassifications, nil
 }
 
-func (eo *ExactOnline) GetReportingBalanceByClassifications(glScheme GLScheme, reportingYear int) (*[]ReportingBalanceByClassification, error) {
+func (eo *ExactOnline) GetReportingBalanceByClassifications(glScheme GLScheme, reportingYear int) (*[]ReportingBalanceByClassification, *errortools.Error) {
 	acc, err := eo.GetReportingBalanceByClassificationsInternal(glScheme, reportingYear, "")
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -81,7 +82,7 @@ type SalesInvoice struct {
 	YourRef                              string     `json:"YourRef"`
 }
 
-func (eo *ExactOnline) GetSalesInvoicesInternal(filter string) (*[]SalesInvoice, error) {
+func (eo *ExactOnline) GetSalesInvoicesInternal(filter string) (*[]SalesInvoice, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", SalesInvoice{})
 	urlStr := fmt.Sprintf("%s/bulk/SalesInvoice/SalesInvoices?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -110,7 +111,7 @@ func (eo *ExactOnline) GetSalesInvoicesInternal(filter string) (*[]SalesInvoice,
 	return &salesInvoices, nil
 }
 
-func (eo *ExactOnline) GetSalesInvoices() (*[]SalesInvoice, error) {
+func (eo *ExactOnline) GetSalesInvoices() (*[]SalesInvoice, *errortools.Error) {
 	acc, err := eo.GetSalesInvoicesInternal("")
 	if err != nil {
 		return nil, err

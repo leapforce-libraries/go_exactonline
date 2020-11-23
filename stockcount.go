@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -33,7 +34,7 @@ type StockCount struct {
 	WarehouseDescription string     `json:"WarehouseDescription"`
 }
 
-func (eo *ExactOnline) GetStockCountsInternal(filter string) (*[]StockCount, error) {
+func (eo *ExactOnline) GetStockCountsInternal(filter string) (*[]StockCount, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", StockCount{})
 	urlStr := fmt.Sprintf("%s/inventory/StockCounts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -62,7 +63,7 @@ func (eo *ExactOnline) GetStockCountsInternal(filter string) (*[]StockCount, err
 	return &stockCounts, nil
 }
 
-func (eo *ExactOnline) GetStockCounts() (*[]StockCount, error) {
+func (eo *ExactOnline) GetStockCounts() (*[]StockCount, *errortools.Error) {
 	acc, err := eo.GetStockCountsInternal("")
 	if err != nil {
 		return nil, err

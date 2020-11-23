@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -40,7 +41,7 @@ type EmploymentContract struct {
 	TypeDescription              string      `json:"TypeDescription"`
 }
 
-func (eo *ExactOnline) GetEmploymentContractsInternal(filter string) (*[]EmploymentContract, error) {
+func (eo *ExactOnline) GetEmploymentContractsInternal(filter string) (*[]EmploymentContract, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", EmploymentContract{})
 	urlStr := fmt.Sprintf("%s/payroll/EmploymentContracts?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -69,7 +70,7 @@ func (eo *ExactOnline) GetEmploymentContractsInternal(filter string) (*[]Employm
 	return &employmentContracts, nil
 }
 
-func (eo *ExactOnline) GetEmploymentContracts() (*[]EmploymentContract, error) {
+func (eo *ExactOnline) GetEmploymentContracts() (*[]EmploymentContract, *errortools.Error) {
 	acc, err := eo.GetEmploymentContractsInternal("")
 	if err != nil {
 		return nil, err

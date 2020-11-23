@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -30,7 +31,7 @@ type AgingReceivablesListByAgeGroup struct {
 	TotalAmount          float64    `json:"TotalAmount"`
 }
 
-func (eo *ExactOnline) GetAgingReceivablesListByAgeGroupsInternal(ageGroup int, filter string) (*[]AgingReceivablesListByAgeGroup, error) {
+func (eo *ExactOnline) GetAgingReceivablesListByAgeGroupsInternal(ageGroup int, filter string) (*[]AgingReceivablesListByAgeGroup, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", AgingReceivablesListByAgeGroup{})
 
 	urlStr := fmt.Sprintf("%s/read/financial/AgingReceivablesListByAgeGroup?ageGroup=%v&$select=%s", eo.baseURL(), ageGroup, selectFields)
@@ -64,7 +65,7 @@ func (eo *ExactOnline) GetAgingReceivablesListByAgeGroupsInternal(ageGroup int, 
 	return &agingReceivablesListByAgeGroups, nil
 }
 
-func (eo *ExactOnline) GetAgingReceivablesListByAgeGroups(ageGroup int) (*[]AgingReceivablesListByAgeGroup, error) {
+func (eo *ExactOnline) GetAgingReceivablesListByAgeGroups(ageGroup int) (*[]AgingReceivablesListByAgeGroup, *errortools.Error) {
 	acc, err := eo.GetAgingReceivablesListByAgeGroupsInternal(ageGroup, "")
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -62,7 +63,7 @@ type Project struct {
 	UseBillingMilestones      bool        `json:"UseBillingMilestones"`
 }
 
-func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
+func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Project{})
 	urlStr := fmt.Sprintf("%s/project/Projects?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -100,7 +101,7 @@ func (eo *ExactOnline) GetProjectsInternal(filter string) (*[]Project, error) {
 	return &projects, nil
 }
 
-func (eo *ExactOnline) GetProjects() (*[]Project, error) {
+func (eo *ExactOnline) GetProjects() (*[]Project, *errortools.Error) {
 	acc, err := eo.GetProjectsInternal("")
 	if err != nil {
 		return nil, err

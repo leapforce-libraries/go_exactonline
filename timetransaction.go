@@ -3,6 +3,7 @@ package exactonline
 import (
 	"fmt"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -55,7 +56,7 @@ type TimeTransaction struct {
 	Type                    int64       `json:"Type"`
 }
 
-func (eo *ExactOnline) GetTimeTransactionsInternal(filter string) (*[]TimeTransaction, error) {
+func (eo *ExactOnline) GetTimeTransactionsInternal(filter string) (*[]TimeTransaction, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", TimeTransaction{})
 	urlStr := fmt.Sprintf("%s/project/TimeTransactions?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -84,7 +85,7 @@ func (eo *ExactOnline) GetTimeTransactionsInternal(filter string) (*[]TimeTransa
 	return &timeTransactions, nil
 }
 
-func (eo *ExactOnline) GetTimeTransactions() (*[]TimeTransaction, error) {
+func (eo *ExactOnline) GetTimeTransactions() (*[]TimeTransaction, *errortools.Error) {
 	acc, err := eo.GetTimeTransactionsInternal("")
 	if err != nil {
 		return nil, err

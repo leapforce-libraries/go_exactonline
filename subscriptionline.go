@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
 	utilities "github.com/leapforce-libraries/go_utilities"
 )
@@ -132,7 +133,7 @@ func (s *SubscriptionLine) Values(deleted bool) (string, string) {
 	return oldValues, newValues
 }
 
-func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, error) {
+func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", SubscriptionLine{})
 	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines?$select=%s", eo.baseURL(), selectFields)
 	if filter != "" {
@@ -170,7 +171,7 @@ func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]Subscript
 	return &subscriptionlines, nil
 }
 
-func (eo *ExactOnline) GetSubscriptionLines() error {
+func (eo *ExactOnline) GetSubscriptionLines() *errortools.Error {
 	sub, err := eo.GetSubscriptionLinesInternal("")
 	if err != nil {
 		return err
@@ -182,7 +183,7 @@ func (eo *ExactOnline) GetSubscriptionLines() error {
 
 // GetSubscriptionLinesBySubscription return all SubscriptionLines for a single Subscription
 //
-func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscription) error {
+func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscription) *errortools.Error {
 	filter := fmt.Sprintf("EntryID eq guid'%s'", subscription.EntryID.String())
 
 	sub, err := eo.GetSubscriptionLinesInternal(filter)
@@ -197,7 +198,7 @@ func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscript
 
 // UpdateSubscription updates Subscription in ExactOnline
 //
-func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
+func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/subscription/SubscriptionLines(guid'%s')", eo.baseURL(), s.ID.String())
 
 	/*sd := new(types.Date)
@@ -218,27 +219,20 @@ func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) error {
 
 	b, err := json.Marshal(slu)
 	if err != nil {
-		fmt.Println("ERROR in UpdateSubscriptionLine:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", slu)
-		return err
+		return errortools.ErrorMessage(err)
 	}
 
-	err = eo.PutBytes(urlStr, b)
-	if err != nil {
-		return err
+	err_ := eo.PutBytes(urlStr, b)
+	if err_ != nil {
+		return err_
 	}
-
-	fmt.Println("\nUPDATED SubscriptionLine")
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", slu)
 
 	return nil
 }
 
 // InsertSubscriptionLine inserts Subscription in ExactOnline
 //
-func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
+func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) *errortools.Error {
 	if sl == nil {
 		return nil
 	}
@@ -254,7 +248,7 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
 
 	b, err := json.Marshal(sli)
 	if err != nil {
-		return err
+		return errortools.ErrorMessage(err)
 	}
 
 	type HasID struct {
@@ -265,17 +259,11 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
 
 	//fmt.Println(sl)
 
-	err = eo.PostBytes(urlStr, b, &he)
-	if err != nil {
-		fmt.Println("ERROR in InsertSubscriptionLine:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", sl)
-		return err
+	err_ := eo.PostBytes(urlStr, b, &he)
+	if err_ != nil {
+		return err_
 	}
 
-	fmt.Println("\nINSERTED SubscriptionLine", he.ID)
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", sl)
 	sl.ID = he.ID
 
 	return nil
@@ -283,7 +271,7 @@ func (eo *ExactOnline) InsertSubscriptionLine(sl *SubscriptionLine) error {
 
 // DeleteSubscription deletes Subscription in ExactOnline
 //
-func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) error {
+func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) *errortools.Error {
 	if sl == nil {
 		return nil
 	}

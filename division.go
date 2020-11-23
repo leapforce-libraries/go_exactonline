@@ -2,6 +2,8 @@ package exactonline
 
 import (
 	"fmt"
+
+	errortools "github.com/leapforce-libraries/go_errortools"
 )
 
 // Division stores division from exactonline
@@ -10,7 +12,7 @@ type Division struct {
 	Code int `json:"Code"`
 }
 
-func (eo *ExactOnline) GetDivisions() error {
+func (eo *ExactOnline) GetDivisions() *errortools.Error {
 	urlStr := fmt.Sprintf("%s/hrm/Divisions", eo.baseURL())
 
 	eo.Divisions = []Division{}
