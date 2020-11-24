@@ -49,7 +49,7 @@ type ExactOnline struct {
 
 // methods
 //
-func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, error) {
+func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, *errortools.Error) {
 	eo := ExactOnline{}
 	eo.division = division
 
