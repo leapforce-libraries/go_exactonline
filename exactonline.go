@@ -182,7 +182,8 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.E
 
 	err = json.Unmarshal(response.Data.Results, &model)
 	if err != nil {
-		return "", errortools.ErrorMessage(err)
+		e.SetMessage(err)
+		return "", e
 	}
 
 	return response.Data.Next, nil
