@@ -3,7 +3,6 @@ package exactonline
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -99,7 +98,7 @@ type Results struct {
 	Next    string          `json:"__next"`
 }
 
-func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) error {
+func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) {
 	for _, s := range eo.Subscriptions {
 		if ac.ID == s.OrderedBy {
 			for _, sl := range eo.SubscriptionLines {
@@ -111,12 +110,10 @@ func (eo *ExactOnline) FindSubscriptionsForAccount(ac *Account) error {
 			ac.Subscriptions = append(ac.Subscriptions, s)
 		}
 	}
-
-	return nil
 }
 
 // wait assures the maximum of 300(?) api calls per minute dictated by exactonline's rate-limit
-func (eo *ExactOnline) Wait() error {
+func (eo *ExactOnline) Wait() {
 	if eo.XRateLimitMinutelyRemaining < 1 {
 		reset := time.Unix(eo.XRateLimitMinutelyReset/1000, 0)
 		ms := reset.Sub(time.Now()).Milliseconds()
@@ -128,8 +125,6 @@ func (eo *ExactOnline) Wait() error {
 			time.Sleep(time.Duration(ms+1000) * time.Millisecond)
 		}
 	}
-
-	return nil
 }
 
 // generic methods
@@ -144,7 +139,7 @@ func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	}
 }
 
-func unmarshalError(res *http.Response) error {
+func unmarshalError(res *http.Response) *string {
 	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil
@@ -157,14 +152,12 @@ func unmarshalError(res *http.Response) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value))
+	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
+	return &message
 }
 
 func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.Error) {
-	err := eo.Wait()
-	if err != nil {
-		return "", errortools.ErrorMessage(err)
-	}
+	eo.Wait()
 
 	eo.RequestCount++
 
@@ -173,14 +166,14 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.E
 	if e != nil {
 		message := unmarshalError(res)
 		if message != nil {
-			e.SetMessage(e)
+			e.SetMessage(message)
 		}
 		return "", e
 	}
 
 	eo.ReadRateLimitHeaders(res)
 
-	err = json.Unmarshal(response.Data.Results, &model)
+	err := json.Unmarshal(response.Data.Results, &model)
 	if err != nil {
 		e.SetMessage(err)
 		return "", e
@@ -207,7 +200,7 @@ func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) *errortools.Error {
 	if e != nil {
 		message := unmarshalError(res)
 		if message != nil {
-			e.SetMessage(e)
+			e.SetMessage(message)
 		}
 		return e
 	}
@@ -236,7 +229,7 @@ func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) *e
 	if e != nil {
 		message := unmarshalError(res)
 		if message != nil {
-			e.SetMessage(e)
+			e.SetMessage(message)
 		}
 		return e
 	}
@@ -261,7 +254,7 @@ func (eo *ExactOnline) Delete(url string) *errortools.Error {
 	if e != nil {
 		message := unmarshalError(res)
 		if message != nil {
-			e.SetMessage(e)
+			e.SetMessage(message)
 		}
 		return e
 	}

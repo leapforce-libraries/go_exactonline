@@ -2,7 +2,6 @@ package exactonline
 
 import (
 	"fmt"
-	"strings"
 
 	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
@@ -63,6 +62,7 @@ func (a *Account) ToBigQuery() *AccountBigQuery {
 	}
 }
 
+/*
 var oldAccount *Account
 
 // SaveValues saves current values in local copy of Account
@@ -82,7 +82,7 @@ func (a *Account) SaveValues(inserted bool) {
 		oldAccount.AccountManagerFullName = a.AccountManagerFullName
 	}
 }
-
+*/
 // Values return comma separated values of Account
 //
 /*func (a *Account) Values() string {
@@ -95,7 +95,7 @@ func (a *Account) SaveValues(inserted bool) {
 		a.State,
 		a.Country)
 }*/
-
+/*
 func (a *Account) Values() (string, string) {
 	old := ""
 	new := ""
@@ -185,7 +185,7 @@ func (a *Account) Values() (string, string) {
 	new = strings.TrimLeft(new, ",")
 
 	return old, new
-}
+}*/
 
 func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Account{})
@@ -200,11 +200,9 @@ func (eo *ExactOnline) GetAccountsInternal(filter string) (*[]Account, *errortoo
 	for urlStr != "" {
 		ac := []Account{}
 
-		str, err := eo.Get(urlStr, &ac)
-		if err != nil {
-			fmt.Println("ERROR in GetAccountsInternal:", err)
-			fmt.Println("url:", urlStr)
-			return nil, err
+		str, e := eo.Get(urlStr, &ac)
+		if e != nil {
+			return nil, e
 		}
 
 		accounts = append(accounts, ac...)
@@ -256,17 +254,10 @@ func (eo *ExactOnline) UpdateAccount(a *Account) *errortools.Error {
 	//fmt.Println("ID")
 	//fmt.Println("Updated:", a.ID.String(), data["AddressLine1"])
 
-	err := eo.PutValues(urlStr, data)
-	if err != nil {
-		fmt.Println("ERROR in UpdateAccount:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", data)
-		return err
+	e := eo.PutValues(urlStr, data)
+	if e != nil {
+		return e
 	}
-
-	fmt.Println("\nUPDATED Account")
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", data)
 
 	return nil
 }
@@ -277,17 +268,10 @@ func (eo *ExactOnline) UpdateAccountMainContact(a *Account) *errortools.Error {
 	data := make(map[string]string)
 	data["MainContact"] = a.MainContact.String()
 
-	err := eo.PutValues(urlStr, data)
-	if err != nil {
-		fmt.Println("ERROR in UpdateAccountMainContact:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", data)
-		return err
+	e := eo.PutValues(urlStr, data)
+	if e != nil {
+		return e
 	}
-
-	fmt.Println("\nUPDATED Account (MainContact)")
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", data)
 
 	return nil
 }
@@ -311,23 +295,12 @@ func (eo *ExactOnline) InsertAccount(a *Account) *errortools.Error {
 	//fmt.Println(urlStr)
 	ac := Account{}
 
-	err := eo.PostValues(urlStr, data, &ac)
-	if err != nil {
-		fmt.Println("ERROR in InsertAccount:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", data)
-		return err
+	e := eo.PostValues(urlStr, data, &ac)
+	if e != nil {
+		return e
 	}
 
-	fmt.Println("\nINSERTED Account", ac.ID)
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", data)
-
 	a.ID = ac.ID
-
-	//fmt.Println("Inserted:", a.ID.String())
-
-	//time.Sleep(1 * time.Second)
 
 	return nil
 }

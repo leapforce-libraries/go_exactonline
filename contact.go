@@ -2,7 +2,6 @@ package exactonline
 
 import (
 	"fmt"
-	"strings"
 
 	errortools "github.com/leapforce-libraries/go_errortools"
 	types "github.com/leapforce-libraries/go_types"
@@ -24,6 +23,7 @@ type Contact struct {
 	IsMainContact bool       `json:"IsMainContact"`
 }
 
+/*
 var oldContact *Contact
 
 // SaveValues saves current values in local copy of Contact
@@ -44,7 +44,7 @@ func (c *Contact) SaveValues(inserted bool) {
 
 // Values return comma separated values of Account
 //
-/*func (c *Contact) Values() string {
+func (c *Contact) Values() string {
 	return fmt.Sprintf("Initials: %s, FirstName: %s, LastName: %s, Gender: %s, Title: %s, Email: %s",
 		c.Initials,
 		c.FirstName,
@@ -53,7 +53,7 @@ func (c *Contact) SaveValues(inserted bool) {
 		c.Title,
 		c.Email)
 }*/
-
+/*
 func (c *Contact) Values() (string, string) {
 	old := ""
 	new := ""
@@ -127,7 +127,7 @@ func (c *Contact) Values() (string, string) {
 	new = strings.TrimLeft(new, ",")
 
 	return old, new
-}
+}*/
 
 func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", Contact{})
@@ -142,9 +142,9 @@ func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, *errortoo
 	for urlStr != "" {
 		co := []Contact{}
 
-		str, err := eo.Get(urlStr, &co)
-		if err != nil {
-			return nil, err
+		str, e := eo.Get(urlStr, &co)
+		if e != nil {
+			return nil, e
 		}
 
 		contacts = append(contacts, co...)
@@ -156,41 +156,33 @@ func (eo *ExactOnline) GetContactsInternal(filter string) (*[]Contact, *errortoo
 }
 
 func (eo *ExactOnline) GetContacts() *errortools.Error {
-	co, err := eo.GetContactsInternal("")
-	if err != nil {
-		return err
+	co, e := eo.GetContactsInternal("")
+	if e != nil {
+		return e
 	}
 	eo.Contacts = *co
 
 	return nil
 }
 
-func (eo *ExactOnline) GetContactsByEmail(account string, email string) ([]Contact, *errortools.Error) {
+func (eo *ExactOnline) GetContactsByEmail(account string, email string) (*[]Contact, *errortools.Error) {
 	filter := fmt.Sprintf("Account eq guid'%s' and Email eq '%s'", account, email)
-	contacts := []Contact{}
 
-	co, err := eo.GetContactsInternal(filter)
-	if err != nil {
-		return contacts, nil
+	contacts, e := eo.GetContactsInternal(filter)
+	if e != nil {
+		return nil, e
 	}
-	contacts = *co
-
-	//fmt.Println("GetContactsByEmail:", email, "len:", len(contacts))
 
 	return contacts, nil
 }
 
-func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) ([]Contact, *errortools.Error) {
+func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) (*[]Contact, *errortools.Error) {
 	filter := fmt.Sprintf("Account eq guid'%s' and FullName eq '%s'", account, fullname)
-	contacts := []Contact{}
 
-	co, err := eo.GetContactsInternal(filter)
-	if err != nil {
-		return contacts, nil
+	contacts, e := eo.GetContactsInternal(filter)
+	if e != nil {
+		return nil, e
 	}
-	contacts = *co
-
-	//fmt.Println("GetContactsByFullName:", email, "len:", len(contacts))
 
 	return contacts, nil
 }
@@ -207,16 +199,10 @@ func (eo *ExactOnline) UpdateContact(c *Contact) *errortools.Error {
 	data["Title"] = c.Title
 	data["Email"] = c.Email
 
-	err := eo.PutValues(urlStr, data)
-	if err != nil {
-		return err
+	e := eo.PutValues(urlStr, data)
+	if e != nil {
+		return e
 	}
-
-	fmt.Println("\nUPDATED Contact")
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", data)
-
-	//time.Sleep(1 * time.Second)
 
 	return nil
 }
@@ -236,17 +222,11 @@ func (eo *ExactOnline) InsertContact(c *Contact) *errortools.Error {
 
 	co := Contact{}
 
-	err := eo.PostValues(urlStr, data, &co)
-	if err != nil {
-		fmt.Println("ERROR in InsertContact:", err)
-		fmt.Println("url:", urlStr)
-		fmt.Println("data:", data)
-		return err
+	e := eo.PostValues(urlStr, data, &co)
+	if e != nil {
+		return e
 	}
 
-	fmt.Println("\nINSERTED Contact", co.ID)
-	fmt.Println("url:", urlStr)
-	fmt.Println("data:", data)
 	c.ID = co.ID
 
 	return nil

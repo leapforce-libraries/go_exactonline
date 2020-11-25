@@ -26,9 +26,9 @@ func (eo *ExactOnline) GetSubscriptionTypes() *errortools.Error {
 	for urlStr != "" {
 		st := []SubscriptionType{}
 
-		str, err := eo.Get(urlStr, &st)
-		if err != nil {
-			return err
+		str, e := eo.Get(urlStr, &st)
+		if e != nil {
+			return e
 		}
 
 		eo.SubscriptionTypes = append(eo.SubscriptionTypes, st...)

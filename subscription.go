@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	errortools "github.com/leapforce-libraries/go_errortools"
@@ -84,6 +83,7 @@ func (s *Subscription) CancellationDateString() string {
 	return s.CancellationDate.Time.Format("2006-01-02")
 }
 
+/*
 var oldSubscription *Subscription
 var newSubscription *Subscription
 
@@ -142,7 +142,7 @@ func (s *Subscription) Values(deleted bool) (string, string) {
 	newValues = strings.TrimLeft(newValues, ",")
 
 	return oldValues, newValues
-}
+}*/
 
 // IsValid returns whether or not a Subscription is valid at a certain time.Time
 //
@@ -216,11 +216,9 @@ func (eo *ExactOnline) GetSubscriptionsInternal(filter string) (*[]Subscription,
 	for urlStr != "" {
 		sc := []Subscription{}
 
-		str, err := eo.Get(urlStr, &sc)
-		if err != nil {
-			fmt.Println("ERROR in GetSubscriptionsInternal:", err)
-			fmt.Println("url:", urlStr)
-			return nil, err
+		str, e := eo.Get(urlStr, &sc)
+		if e != nil {
+			return nil, e
 		}
 
 		subscriptions = append(subscriptions, sc...)
@@ -288,9 +286,9 @@ func (eo *ExactOnline) UpdateSubscription(s *Subscription) *errortools.Error {
 	if err != nil {
 		return errortools.ErrorMessage(err)
 	}
-	err_ := eo.PutBytes(urlStr, b)
-	if err_ != nil {
-		return errortools.ErrorMessage(err_)
+	e := eo.PutBytes(urlStr, b)
+	if e != nil {
+		return e
 	}
 
 	return nil
@@ -334,9 +332,9 @@ func (eo *ExactOnline) InsertSubscription(s *Subscription) *errortools.Error {
 
 	he := HasEntryID{}
 
-	err_ := eo.PostBytes(urlStr, b, &he)
-	if err != nil {
-		return err_
+	e := eo.PostBytes(urlStr, b, &he)
+	if e != nil {
+		return e
 	}
 
 	s.EntryID = he.EntryID
@@ -353,14 +351,10 @@ func (eo *ExactOnline) DeleteSubscription(s *Subscription) *errortools.Error {
 
 	urlStr := fmt.Sprintf("%s/subscription/Subscriptions(guid'%s')", eo.baseURL(), s.EntryID.String())
 
-	err := eo.Delete(urlStr)
-	if err != nil {
-		fmt.Println("ERROR in DeleteSubscription:", err)
-		fmt.Println("url:", urlStr)
-		return err
+	e := eo.Delete(urlStr)
+	if e != nil {
+		return e
 	}
-
-	fmt.Println("\nDELETED Subscription", urlStr)
 
 	return nil
 }

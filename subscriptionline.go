@@ -3,7 +3,6 @@ package exactonline
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	errortools "github.com/leapforce-libraries/go_errortools"
@@ -62,6 +61,7 @@ func (s *SubscriptionLine) ToDateString() string {
 	return s.ToDate.Time.Format("2006-01-02")
 }
 
+/*
 var oldSubscriptionLine *SubscriptionLine
 var newSubscriptionLine *SubscriptionLine
 
@@ -131,7 +131,7 @@ func (s *SubscriptionLine) Values(deleted bool) (string, string) {
 	newValues = strings.TrimLeft(newValues, ",")
 
 	return oldValues, newValues
-}
+}*/
 
 func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]SubscriptionLine, *errortools.Error) {
 	selectFields := utilities.GetTaggedFieldNames("json", SubscriptionLine{})
@@ -146,11 +146,9 @@ func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]Subscript
 	for urlStr != "" {
 		sl := []SubscriptionLine{}
 
-		str, err := eo.Get(urlStr, &sl)
-		if err != nil {
-			fmt.Println("ERROR in GetSubscriptionLinesInternal:", err)
-			fmt.Println("url:", urlStr)
-			return nil, err
+		str, e := eo.Get(urlStr, &sl)
+		if e != nil {
+			return nil, e
 		}
 
 		for ii := range sl {
@@ -172,9 +170,9 @@ func (eo *ExactOnline) GetSubscriptionLinesInternal(filter string) (*[]Subscript
 }
 
 func (eo *ExactOnline) GetSubscriptionLines() *errortools.Error {
-	sub, err := eo.GetSubscriptionLinesInternal("")
-	if err != nil {
-		return err
+	sub, e := eo.GetSubscriptionLinesInternal("")
+	if e != nil {
+		return e
 	}
 	eo.SubscriptionLines = *sub
 
@@ -186,9 +184,9 @@ func (eo *ExactOnline) GetSubscriptionLines() *errortools.Error {
 func (eo ExactOnline) GetSubscriptionLinesBySubscription(subscription *Subscription) *errortools.Error {
 	filter := fmt.Sprintf("EntryID eq guid'%s'", subscription.EntryID.String())
 
-	sub, err := eo.GetSubscriptionLinesInternal(filter)
-	if err != nil {
-		return err
+	sub, e := eo.GetSubscriptionLinesInternal(filter)
+	if e != nil {
+		return e
 	}
 	subscription.SubscriptionLines = *sub
 
@@ -222,9 +220,9 @@ func (eo *ExactOnline) UpdateSubscriptionLine(s *SubscriptionLine) *errortools.E
 		return errortools.ErrorMessage(err)
 	}
 
-	err_ := eo.PutBytes(urlStr, b)
-	if err_ != nil {
-		return err_
+	e := eo.PutBytes(urlStr, b)
+	if e != nil {
+		return e
 	}
 
 	return nil
@@ -280,15 +278,10 @@ func (eo *ExactOnline) DeleteSubscriptionLine(sl *SubscriptionLine) *errortools.
 
 	fmt.Println("\nDELETED SubscriptionLine", urlStr, sl.ID)
 
-	err := eo.Delete(urlStr)
-	if err != nil {
-		fmt.Println("ERROR in DeleteSubscriptionLine:", err)
-		fmt.Println("url:", urlStr)
-		return err
+	e := eo.Delete(urlStr)
+	if e != nil {
+		return e
 	}
-
-	fmt.Println("\nDELETED SubscriptionLine")
-	fmt.Println("url:", urlStr)
 
 	return nil
 }
