@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -139,35 +138,20 @@ func (eo *ExactOnline) ReadRateLimitHeaders(res *http.Response) {
 	}
 }
 
-func unmarshalError(res *http.Response) *string {
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil
-	}
-
-	ee := ExactOnlineError{}
-
-	err = json.Unmarshal(b, &ee)
-	if err != nil {
-		return nil
-	}
-
-	message := fmt.Sprintf("Server returned statuscode %v, error:%s", res.StatusCode, ee.Err.Message.Value)
-	return &message
-}
-
 func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.Error) {
 	eo.Wait()
 
 	eo.RequestCount++
 
 	response := Response{}
-	_, res, e := eo.oAuth2.Get(url, &response)
+	ee := ExactOnlineError{}
+	_, res, e := eo.oAuth2.Get(url, &response, &ee)
+
 	if e != nil {
-		message := unmarshalError(res)
-		if message != nil {
-			e.SetMessage(message)
+		if ee.Err.Message.Value != "" {
+			e.SetMessage(ee.Err.Message.Value)
 		}
+
 		return "", e
 	}
 
@@ -196,12 +180,14 @@ func (eo *ExactOnline) PutBytes(url string, b []byte) *errortools.Error {
 func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) *errortools.Error {
 	eo.RequestCount++
 
-	_, res, e := eo.oAuth2.Put(url, buf, nil)
+	ee := ExactOnlineError{}
+	_, res, e := eo.oAuth2.Put(url, buf, nil, &ee)
+
 	if e != nil {
-		message := unmarshalError(res)
-		if message != nil {
-			e.SetMessage(message)
+		if ee.Err.Message.Value != "" {
+			e.SetMessage(ee.Err.Message.Value)
 		}
+
 		return e
 	}
 
@@ -224,13 +210,15 @@ func (eo *ExactOnline) PostBytes(url string, b []byte, model interface{}) *error
 func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) *errortools.Error {
 	eo.RequestCount++
 
+	ee := ExactOnlineError{}
 	response := ResponseSingle{}
-	_, res, e := eo.oAuth2.Post(url, buf, &response)
+	_, res, e := eo.oAuth2.Post(url, buf, &response, &ee)
+
 	if e != nil {
-		message := unmarshalError(res)
-		if message != nil {
-			e.SetMessage(message)
+		if ee.Err.Message.Value != "" {
+			e.SetMessage(ee.Err.Message.Value)
 		}
+
 		return e
 	}
 
@@ -250,12 +238,14 @@ func (eo *ExactOnline) Post(url string, buf *bytes.Buffer, model interface{}) *e
 func (eo *ExactOnline) Delete(url string) *errortools.Error {
 	eo.RequestCount++
 
-	_, res, e := eo.oAuth2.Delete(url, nil, nil)
+	ee := ExactOnlineError{}
+	_, res, e := eo.oAuth2.Delete(url, nil, nil, &ee)
+
 	if e != nil {
-		message := unmarshalError(res)
-		if message != nil {
-			e.SetMessage(message)
+		if ee.Err.Message.Value != "" {
+			e.SetMessage(ee.Err.Message.Value)
 		}
+
 		return e
 	}
 
