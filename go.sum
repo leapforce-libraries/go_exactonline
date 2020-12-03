@@ -326,6 +326,10 @@ github.com/leapforce-libraries/go_oauth2 v0.0.0-20201125183253-0a4022a01ee7 h1:a
 github.com/leapforce-libraries/go_oauth2 v0.0.0-20201125183253-0a4022a01ee7/go.mod h1:2oJ/XbS5ISSXHlg8YGk55m2fh5n3emRznMrstVaGEbY=
 github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202160116-de427f7c4b6f h1:F6UGXZM/XnyORg8DyfKmu3S4QL17HYCQ5ruAlSXcU3M=
 github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202160116-de427f7c4b6f/go.mod h1:xwklczhTVEvoJNM3PDIxHh4CaU/vJMmQKZs5V7hClvU=
+github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202180253-b3bafd61d9a9 h1:3Xwfh+KQjVfkMTKIN60rKav2qCYaGjpFLaCmIsvzPcw=
+github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202180253-b3bafd61d9a9/go.mod h1:xwklczhTVEvoJNM3PDIxHh4CaU/vJMmQKZs5V7hClvU=
+github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202210430-1cfa29181bf3 h1:By2PYdCOHBvjWn03iq1hGkcE6cT8GI95hZgytorKGa4=
+github.com/leapforce-libraries/go_oauth2 v0.0.0-20201202210430-1cfa29181bf3/go.mod h1:R7J+F5h3Whr8WKOT8PDzv+LjfaHUFpwZcD5lLWUFg7o=
 github.com/leapforce-libraries/go_types v0.0.0-20201101222114-6d3ec3839c8c h1:4GY1e071Gyk2sBn8mMVi2rI+DUnqIUP3/IAHvND39w8=
 github.com/leapforce-libraries/go_types v0.0.0-20201101222114-6d3ec3839c8c/go.mod h1:0k0QPi4o2OO3yau759B2U5XIEPbuYTf56QxyF8WdV4o=
 github.com/leapforce-libraries/go_types v0.0.0-20201116193520-d5f73916424b h1:HyAuC9pOtQ0yIw7Nkb/R/RxEEyz9lOH88A4UONVhOEo=
@@ -336,6 +340,8 @@ github.com/leapforce-libraries/go_utilities v0.0.0-20201102125031-858dcf5b1a85 h
 github.com/leapforce-libraries/go_utilities v0.0.0-20201102125031-858dcf5b1a85/go.mod h1:ESDsQRfPC+Xg1UIa8AebkB0seY2m4g+kUFI82sh9gkg=
 github.com/leapforce-libraries/go_utilities v0.0.0-20201202144031-10e8b749b684 h1:po/Si8kWQYmEOh7uhAaoFNYC+AFoOGpYdzxMOaXuMkE=
 github.com/leapforce-libraries/go_utilities v0.0.0-20201202144031-10e8b749b684/go.mod h1:KczL99mKoKqB9SZL07QVbTY2uNMhHKDZRqgaWMU7RKI=
+github.com/leapforce-libraries/go_utilities v0.0.0-20201202203555-f4c95a94c257 h1:zdm/1ZMu4J2qIBNkPrJt0jwNlM7E9yupGhVzeFx17Fs=
+github.com/leapforce-libraries/go_utilities v0.0.0-20201202203555-f4c95a94c257/go.mod h1:KczL99mKoKqB9SZL07QVbTY2uNMhHKDZRqgaWMU7RKI=
 github.com/leapforce-nl/go_bigquerytools v0.0.0-20200125092930-6a74a18b601f h1:SuYeEW2fDxb7EMzmB5BIvtaLF7kt0FQIW1b9bivGmRw=
 github.com/leapforce-nl/go_bigquerytools v0.0.0-20200125092930-6a74a18b601f/go.mod h1:bFZz/J96z4qmJRQZuT5wpMVkQtDXL9buhl6bmnqbJ1I=
 github.com/leapforce-nl/go_errortools v0.0.0-20200122233712-9c928cdbe0a9 h1:xPS6sk1KdG9t2OiERAmz1MlIjJRYekd3h5TKLvYovLU=
