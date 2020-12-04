@@ -148,13 +148,13 @@ func (s *Subscription) Values(deleted bool) (string, string) {
 //
 func (s *Subscription) IsValid(timestamp time.Time) bool {
 	if s.StartDate != new(types.Date) {
-		if s.StartDate.After(timestamp) {
+		if s.StartDate.Time.After(timestamp) {
 			return false
 		}
 	}
 
 	if s.EndDate != new(types.Date) {
-		if s.EndDate.Before(timestamp) {
+		if s.EndDate.Time.Before(timestamp) {
 			return false
 		}
 	}
