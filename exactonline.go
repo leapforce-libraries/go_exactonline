@@ -42,12 +42,11 @@ type ExactOnline struct {
 	XRateLimitMinutelyRemaining int
 	XRateLimitMinutelyReset     int64
 	RequestCount                int64
-	//IsLive                      bool
 }
 
 // methods
 //
-func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery, isLive bool) (*ExactOnline, *errortools.Error) {
+func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery) (*ExactOnline, *errortools.Error) {
 	eo := ExactOnline{}
 	eo.division = division
 
@@ -62,7 +61,7 @@ func NewExactOnline(division int32, clientID string, clientSecret string, scope 
 		TokenURL:        tokenURL,
 		TokenHTTPMethod: tokenHttpMethod,
 	}
-	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery, isLive)
+	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery)
 	return &eo, nil
 }
 
