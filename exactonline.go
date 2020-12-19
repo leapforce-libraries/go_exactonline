@@ -53,7 +53,7 @@ func NewExactOnline(division int32, clientID string, clientSecret string, scope 
 	eo.RequestCount = 0
 
 	config := oauth2.OAuth2Config{
-		ApiName:         apiName,
+		APIName:         apiName,
 		ClientID:        clientID,
 		ClientSecret:    clientSecret,
 		RedirectURL:     redirectURL,
