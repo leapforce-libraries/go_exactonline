@@ -12,8 +12,16 @@ import (
 // Subscription stores Subscription from exactonline
 //
 type SubscriptionType struct {
-	ID   types.GUID `json:"ID"`
-	Code string     `json:"Code"`
+	ID               types.GUID  `json:"ID"`
+	Code             string      `json:"Code"`
+	Created          *types.Date `json:"Created"`
+	Creator          types.GUID  `json:"Creator"`
+	CreatorFullName  string      `json:"CreatorFullName"`
+	Description      string      `json:"Description"`
+	Division         int32       `json:"Division"`
+	Modified         *types.Date `json:"Modified"`
+	Modifier         types.GUID  `json:"Modifier"`
+	ModifierFullName string      `json:"ModifierFullName"`
 }
 
 func (eo *ExactOnline) GetSubscriptionTypes() *errortools.Error {

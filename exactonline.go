@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	bigquerytools "github.com/leapforce-libraries/go_bigquerytools"
 	errortools "github.com/leapforce-libraries/go_errortools"
+	google "github.com/leapforce-libraries/go_google"
 	oauth2 "github.com/leapforce-libraries/go_oauth2"
 )
 
@@ -46,14 +46,13 @@ type ExactOnline struct {
 
 // methods
 //
-func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *bigquerytools.BigQuery) (*ExactOnline, *errortools.Error) {
+func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *google.BigQuery) (*ExactOnline, *errortools.Error) {
 	eo := ExactOnline{}
 	eo.division = division
 
 	eo.RequestCount = 0
 
 	config := oauth2.OAuth2Config{
-		APIName:         apiName,
 		ClientID:        clientID,
 		ClientSecret:    clientSecret,
 		RedirectURL:     redirectURL,
@@ -61,7 +60,7 @@ func NewExactOnline(division int32, clientID string, clientSecret string, scope 
 		TokenURL:        tokenURL,
 		TokenHTTPMethod: tokenHttpMethod,
 	}
-	eo.oAuth2 = oauth2.NewOAuth(config, bigQuery)
+	eo.oAuth2 = oauth2.NewOAuth(config)
 	return &eo, nil
 }
 
