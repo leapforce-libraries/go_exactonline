@@ -10,6 +10,7 @@ import (
 
 	errortools "github.com/leapforce-libraries/go_errortools"
 	google "github.com/leapforce-libraries/go_google"
+	bigquery "github.com/leapforce-libraries/go_google/bigquery"
 	oauth2 "github.com/leapforce-libraries/go_oauth2"
 )
 
@@ -46,19 +47,29 @@ type ExactOnline struct {
 
 // methods
 //
-func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQuery *google.BigQuery) (*ExactOnline, *errortools.Error) {
+func NewExactOnline(division int32, clientID string, clientSecret string, scope string, bigQueryService *bigquery.Service) (*ExactOnline, *errortools.Error) {
 	eo := ExactOnline{}
 	eo.division = division
 
 	eo.RequestCount = 0
 
+	getTokenFunction := func() (*oauth2.Token, *errortools.Error) {
+		return google.GetToken(apiName, clientID, bigQueryService)
+	}
+
+	saveTokenFunction := func(token *oauth2.Token) *errortools.Error {
+		return google.SaveToken(apiName, clientID, token, bigQueryService)
+	}
+
 	config := oauth2.OAuth2Config{
-		ClientID:        clientID,
-		ClientSecret:    clientSecret,
-		RedirectURL:     redirectURL,
-		AuthURL:         authURL,
-		TokenURL:        tokenURL,
-		TokenHTTPMethod: tokenHttpMethod,
+		ClientID:          clientID,
+		ClientSecret:      clientSecret,
+		RedirectURL:       redirectURL,
+		AuthURL:           authURL,
+		TokenURL:          tokenURL,
+		TokenHTTPMethod:   tokenHttpMethod,
+		GetTokenFunction:  &getTokenFunction,
+		SaveTokenFunction: &saveTokenFunction,
 	}
 	eo.oAuth2 = oauth2.NewOAuth(config)
 	return &eo, nil
