@@ -1,7 +1,6 @@
 package exactonline
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	errortools "github.com/leapforce-libraries/go_errortools"
 	google "github.com/leapforce-libraries/go_google"
 	bigquery "github.com/leapforce-libraries/go_google/bigquery"
+	go_http "github.com/leapforce-libraries/go_http"
 	oauth2 "github.com/leapforce-libraries/go_oauth2"
 )
 
@@ -154,7 +154,13 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.E
 
 	response := Response{}
 	ee := ExactOnlineError{}
-	_, res, e := eo.oAuth2.Get(url, &response, &ee)
+
+	requestConfig := go_http.RequestConfig{
+		URL:           url,
+		ResponseModel: &response,
+		ErrorModel:    &ee,
+	}
+	_, res, e := eo.oAuth2.Get(&requestConfig)
 
 	if e != nil {
 		if ee.Err.Message.Value != "" {
@@ -175,6 +181,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.E
 	return response.Data.Next, nil
 }
 
+/*
 func (eo *ExactOnline) PutValues(url string, values map[string]string) *errortools.Error {
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(values)
@@ -190,6 +197,7 @@ func (eo *ExactOnline) Put(url string, buf *bytes.Buffer) *errortools.Error {
 	eo.RequestCount++
 
 	ee := ExactOnlineError{}
+
 	_, res, e := eo.oAuth2.Put(url, buf, nil, &ee)
 
 	if e != nil {
@@ -262,3 +270,4 @@ func (eo *ExactOnline) Delete(url string) *errortools.Error {
 
 	return nil
 }
+*/

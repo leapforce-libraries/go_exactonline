@@ -236,6 +236,7 @@ func (eo ExactOnline) GetAccountsByChamberOfCommerce(chamberOfCommerce string) (
 	return accounts, nil
 }
 
+/*
 func (eo *ExactOnline) UpdateAccount(a *Account) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Accounts(guid'%s')", eo.baseURL(), a.ID.String())
 
@@ -304,3 +305,4 @@ func (eo *ExactOnline) InsertAccount(a *Account) *errortools.Error {
 
 	return nil
 }
+*/

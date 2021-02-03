@@ -187,6 +187,7 @@ func (eo *ExactOnline) GetContactsByFullName(account string, fullname string) (*
 	return contacts, nil
 }
 
+/*
 func (eo *ExactOnline) UpdateContact(c *Contact) *errortools.Error {
 	urlStr := fmt.Sprintf("%s/crm/Contacts(guid'%s')", eo.baseURL(), c.ID.String())
 
@@ -231,3 +232,4 @@ func (eo *ExactOnline) InsertContact(c *Contact) *errortools.Error {
 
 	return nil
 }
+*/

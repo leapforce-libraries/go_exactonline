@@ -1,7 +1,6 @@
 package exactonline
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -264,6 +263,7 @@ func (eo ExactOnline) GetSubscriptionsByAccount(account *Account) *errortools.Er
 	return nil
 }
 
+/*
 // UpdateSubscription updates Subscription in ExactOnline
 //
 func (eo *ExactOnline) UpdateSubscription(s *Subscription) *errortools.Error {
@@ -358,3 +358,4 @@ func (eo *ExactOnline) DeleteSubscription(s *Subscription) *errortools.Error {
 
 	return nil
 }
+*/
