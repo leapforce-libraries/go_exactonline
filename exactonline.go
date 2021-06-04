@@ -26,8 +26,8 @@ const (
 // ExactOnline stores ExactOnline configuration
 //
 type ExactOnline struct {
-	division int32
-	oAuth2   *oauth2.OAuth2
+	division      int32
+	oAuth2Service *oauth2.Service
 
 	// data
 	Contacts          []Contact
@@ -61,7 +61,7 @@ func NewExactOnline(division int32, clientID string, clientSecret string, scope 
 		return google.SaveToken(apiName, clientID, token, bigQueryService)
 	}
 
-	config := oauth2.OAuth2Config{
+	config := oauth2.ServiceConfig{
 		ClientID:          clientID,
 		ClientSecret:      clientSecret,
 		RedirectURL:       redirectURL,
@@ -71,7 +71,12 @@ func NewExactOnline(division int32, clientID string, clientSecret string, scope 
 		GetTokenFunction:  &getTokenFunction,
 		SaveTokenFunction: &saveTokenFunction,
 	}
-	eo.oAuth2 = oauth2.NewOAuth(config)
+	oAuth2Service, e := oauth2.NewService(&config)
+	if e != nil {
+		return nil, e
+	}
+
+	eo.oAuth2Service = oAuth2Service
 	return &eo, nil
 }
 
@@ -83,8 +88,8 @@ func (eo *ExactOnline) apiURL() string {
 	return apiURL
 }
 
-func (eo *ExactOnline) InitToken() *errortools.Error {
-	return eo.oAuth2.InitToken()
+func (eo *ExactOnline) InitToken(scope string) *errortools.Error {
+	return eo.oAuth2Service.InitToken(scope)
 }
 
 // Response represents highest level of exactonline api response
@@ -160,7 +165,7 @@ func (eo *ExactOnline) Get(url string, model interface{}) (string, *errortools.E
 		ResponseModel: &response,
 		ErrorModel:    &ee,
 	}
-	_, res, e := eo.oAuth2.Get(&requestConfig)
+	_, res, e := eo.oAuth2Service.Get(&requestConfig)
 
 	if e != nil {
 		if ee.Err.Message.Value != "" {
